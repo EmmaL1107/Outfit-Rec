@@ -116,7 +116,7 @@ function pickBest<T>(arr: T[], scorer: (item: T) => number, count: number): T[] 
 
 function pickAccessory(
   pool: ClothingItem[],
-  style: ClothingStyle,
+  _style: ClothingStyle,
   compatibleStyles: ClothingStyle[],
   topColor: ClothingColor,
   usedIds: Set<string>,
