@@ -200,12 +200,9 @@ export function IconBriefcase({ size = 24, color = 'currentColor', className, st
 export function IconRunning({ size = 24, color = 'currentColor', className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
-      <circle cx="14" cy="4.5" r="2" fill={color} />
-      <path d="M13 6.5L9.5 12" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M11 8.5L15 7" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M11 8.5L7 10.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M9.5 12L14 16L12 21" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9.5 12L5 15L4 21" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 15l2-4h4l2-3h3l2 3h3l2 4" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 15h18v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3z" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.1" strokeLinejoin="round" />
+      <path d="M7 15v2M11 15v2M15 15v2M19 15v2" stroke={color} strokeWidth="1" opacity="0.5" />
     </svg>
   );
 }
