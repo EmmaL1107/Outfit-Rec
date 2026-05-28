@@ -106,6 +106,14 @@ export function IconRefresh({ size = 24, color = 'currentColor', className, styl
   );
 }
 
+export function IconRefreshCw({ size = 24, color = 'currentColor', className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" fill={color} />
+    </svg>
+  );
+}
+
 export function IconCalendar({ size = 24, color = 'currentColor', className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
@@ -232,6 +240,40 @@ export function IconLocate({ size = 24, color = 'currentColor', className, style
       <circle cx="12" cy="12" r="8" stroke={color} strokeWidth="1.5" />
       <path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
       <circle cx="12" cy="12" r="2.5" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.2" />
+    </svg>
+  );
+}
+
+export function IconHeart({ size = 24, color = 'currentColor', className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 20l-3.5-3.5c-2.5-2.5-2.5-6.5 0-9s6.5-2.5 9 0c2.5 2.5 2.5 6.5 0 9L12 20z" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.15" />
+    </svg>
+  );
+}
+
+export function IconHeartFilled({ size = 24, color = 'currentColor', className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 20l-3.5-3.5c-2.5-2.5-2.5-6.5 0-9s6.5-2.5 9 0c2.5 2.5 2.5 6.5 0 9L12 20z" fill={color} />
+    </svg>
+  );
+}
+
+export function IconThumbsUp({ size = 24, color = 'currentColor', className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M14 2H6a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2v-3l5-5V4a2 2 0 00-2-2h-2z" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.1" />
+      <path d="M14 2v5h5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconThumbsDown({ size = 24, color = 'currentColor', className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M10 22h8a2 2 0 002-2V9a2 2 0 00-2-2H10a2 2 0 00-2 2v3l-5 5v4a2 2 0 002 2h2z" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.1" />
+      <path d="M10 22v-5h-5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }

@@ -63,6 +63,21 @@ export interface ClothingItem {
   season: Season[];
   part: ClothingPart;
   createdAt: number;
+  preferenceScore: number;
+}
+
+export interface BlacklistItem {
+  clothingId: string;
+  bannedUntil: number;
+}
+
+export interface UserPreference {
+  outfitCombinations: string[];
+  blacklist: BlacklistItem[];
+  likedColorSchemes: string[];
+  likedStyleCombos: string[];
+  dislikedColorSchemes: string[];
+  dislikedStyleCombos: string[];
 }
 
 export type DressCode = '正式' | '休闲' | '运动' | '简约';

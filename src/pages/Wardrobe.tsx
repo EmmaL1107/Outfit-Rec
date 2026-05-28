@@ -23,7 +23,9 @@ import {
 } from '../types';
 import { clothingDB } from '../store/db';
 import { compressImage } from '../utils/image';
-import { IconPlus, IconClose } from '../components/Icons';
+import { generateTestClothes } from '../utils/testData';
+import { IconPlus, IconClose, IconRefreshCw } from '../components/Icons';
+
 
 type FilterState = {
   category: ClothingCategory | '';
@@ -39,6 +41,7 @@ export default function Wardrobe() {
   const [clothes, setClothes] = useState<ClothingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [editItem, setEditItem] = useState<ClothingItem | null>(null);
   const [filter, setFilter] = useState<FilterState>({
     category: '',
@@ -50,6 +53,7 @@ export default function Wardrobe() {
     season: '',
   });
   const [previewImage, setPreviewImage] = useState<string>('');
+  const [showClearModal, setShowClearModal] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
@@ -114,6 +118,7 @@ export default function Wardrobe() {
         ...form,
         part: CATEGORY_PART_MAP[form.category],
         createdAt: Date.now(),
+        preferenceScore: 0,
       };
       await clothingDB.add(item);
     }
@@ -160,6 +165,35 @@ export default function Wardrobe() {
     if (fileRef.current) fileRef.current.value = '';
   }
 
+  async function handleClearAllClothes() {
+    setShowClearModal(false);
+    setLoading(true);
+    const allClothes = await clothingDB.getAll();
+    for (const item of allClothes) {
+      await clothingDB.delete(item.id);
+    }
+    await loadClothes();
+  }
+
+  async function handleGenerateTestClothes(mode: 'replace' | 'append') {
+    setShowGenerateModal(false);
+    setLoading(true);
+    
+    if (mode === 'replace') {
+      const allClothes = await clothingDB.getAll();
+      for (const item of allClothes) {
+        await clothingDB.delete(item.id);
+      }
+    }
+
+    const testClothes = generateTestClothes();
+    for (const item of testClothes) {
+      await clothingDB.add(item);
+    }
+
+    await loadClothes();
+  }
+
   const filteredClothes = clothes.filter((c) => {
     if (filter.category && c.category !== filter.category) return false;
     if (filter.color && c.color !== filter.color) return false;
@@ -177,9 +211,19 @@ export default function Wardrobe() {
     <div className="page wardrobe-page">
       <div className="page-header">
         <h1>我的衣橱</h1>
-        <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
-          <IconPlus size={16} color="#fff" /> 添加衣物
-        </button>
+        <div className="header-actions">
+          {clothes.length > 0 && (
+            <button className="btn btn-danger" onClick={() => setShowClearModal(true)}>
+              <IconClose size={14} /> 清空衣橱
+            </button>
+          )}
+          <button className="btn btn-secondary" onClick={() => setShowGenerateModal(true)}>
+            <IconRefreshCw size={16} /> 生成测试衣物
+          </button>
+          <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
+            <IconPlus size={16} color="#fff" /> 添加衣物
+          </button>
+        </div>
       </div>
 
       <div className="filter-bar">
@@ -264,13 +308,7 @@ export default function Wardrobe() {
           {filteredClothes.map((item) => (
             <div key={item.id} className="clothing-card">
               <div className="clothing-image">
-                {item.image ? (
-                  <img src={item.image} alt={item.category} />
-                ) : (
-                  <div className="no-image-placeholder">
-                    <span>{item.category}</span>
-                  </div>
-                )}
+                {item.image && <img src={item.image} alt={item.category} />}
               </div>
               <div className="clothing-info">
                 <div className="clothing-tags">
@@ -438,6 +476,49 @@ export default function Wardrobe() {
               <button className="btn btn-primary" onClick={handleSave}>
                 {editItem ? '保存修改' : '添加'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showGenerateModal && (
+        <div className="modal-overlay" onClick={() => setShowGenerateModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>生成测试衣物</h2>
+              <button className="modal-close" onClick={() => setShowGenerateModal(false)}>
+                <IconClose size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>确定要生成测试衣物吗？</p>
+              <p className="hint">将生成 30 件不同款式的衣物数据。</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={() => setShowGenerateModal(false)}>取消</button>
+              <button className="btn btn-secondary" onClick={() => handleGenerateTestClothes('append')}>追加到现有</button>
+              <button className="btn btn-primary" onClick={() => handleGenerateTestClothes('replace')}>覆盖现有数据</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showClearModal && (
+        <div className="modal-overlay" onClick={() => setShowClearModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>清空衣橱</h2>
+              <button className="modal-close" onClick={() => setShowClearModal(false)}>
+                <IconClose size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>确定要删除衣橱中的所有衣物吗？</p>
+              <p className="hint">此操作不可撤销，所有衣物数据将被永久删除。</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={() => setShowClearModal(false)}>取消</button>
+              <button className="btn btn-danger" onClick={handleClearAllClothes}>确认清空</button>
             </div>
           </div>
         </div>

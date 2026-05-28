@@ -3,7 +3,8 @@ import type { ClothingItem, CalendarEvent, WeatherData, OutfitSuggestion } from 
 import { COLOR_HEX_MAP } from '../types';
 import { clothingDB, eventDB, settingsDB } from '../store/db';
 import { fetchWeather, getDressingIndex, getSeasonFromMonth, isWeekend } from '../utils/weather';
-import { generateOutfits } from '../utils/outfit';
+import { generateOutfits, replaceOutfitItem } from '../utils/outfit';
+import { addToBlacklist, addOutfitCombination, addLikedColorScheme, addLikedStyleCombo, addDislikedColorScheme, addDislikedStyleCombo } from '../store/preference';
 import {
   IconSun,
   IconCloudSun,
@@ -24,7 +25,11 @@ import {
   IconLocate,
   IconCheck,
   IconClose,
+  IconThumbsUp,
+  IconThumbsDown,
+  IconRefreshCw,
 } from '../components/Icons';
+
 
 function WeatherIcon({ condition }: { condition: string }) {
   const props = { size: 42, color: '#fff' };
@@ -48,6 +53,89 @@ function DressCodeIcon({ code }: { code: string }) {
   }
 }
 
+interface OutfitCardProps {
+  outfit: OutfitSuggestion;
+  index: number;
+  onLike: (id: string) => void;
+  onDislike: (id: string) => void;
+  onReplace: (part: 'top' | 'bottom' | 'outerwear' | 'shoes' | 'hat' | 'accessory') => void;
+  liked: boolean;
+  disliked: boolean;
+  replacingPart: string | null;
+}
+
+function OutfitCard({ outfit, index, onLike, onDislike, onReplace, liked, disliked, replacingPart }: OutfitCardProps) {
+  const items: { item: ClothingItem; label: string; part: 'top' | 'bottom' | 'outerwear' | 'shoes' | 'hat' | 'accessory' }[] = [];
+  if (outfit.top) items.push({ item: outfit.top, label: '上衣', part: 'top' });
+  if (outfit.bottom) items.push({ item: outfit.bottom, label: '下装', part: 'bottom' });
+  if (outfit.outerwear) items.push({ item: outfit.outerwear, label: '外套', part: 'outerwear' });
+  if (outfit.hat) items.push({ item: outfit.hat, label: '帽子', part: 'hat' });
+  if (outfit.shoes) items.push({ item: outfit.shoes, label: '鞋子', part: 'shoes' });
+  if (outfit.accessory) items.push({ item: outfit.accessory, label: '配饰', part: 'accessory' });
+
+  return (
+    <div className="outfit-card">
+      <div className="outfit-card-header">
+        <span className="outfit-number">方案 {index + 1}</span>
+        <span className="outfit-style-badge">{outfit.style}风格</span>
+        {outfit.crossStyle && (
+          <span className="outfit-style-badge cross">混搭</span>
+        )}
+      </div>
+      
+      <div className="outfit-reason">{outfit.reason}</div>
+      
+      <div className="outfit-items-grid">
+        {items.map(({ item, label, part }) => (
+          <div key={item.id} className="outfit-item-card">
+            <button 
+              className={`replace-btn ${replacingPart === part ? 'loading' : ''}`}
+              onClick={() => onReplace(part)}
+              disabled={replacingPart !== null}
+            >
+              <IconRefreshCw size={12} />
+            </button>
+            <div className="outfit-item-label">{label}</div>
+            <div className="outfit-item-image-wrapper">
+              {item.image && <img src={item.image} alt={item.category} className="outfit-item-image" />}
+            </div>
+            <div className="outfit-item-info">
+              <span className="tag tag-category">{item.category}</span>
+              <span 
+                className="tag" 
+                style={{ 
+                  backgroundColor: COLOR_HEX_MAP[item.color], 
+                  color: item.color === '白' || item.color === '黄' ? '#333' : '#fff' 
+                }}
+              >
+                {item.color}
+              </span>
+              <span className="tag tag-thickness">{item.thickness}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="outfit-card-actions">
+        <button 
+          className={`btn-action btn-like ${liked ? 'active' : ''}`}
+          onClick={() => onLike(outfit.id)}
+        >
+          <IconThumbsUp size={18} color={liked ? '#c0616b' : 'var(--text-secondary)'} />
+          <span>喜欢</span>
+        </button>
+        <button 
+          className={`btn-action btn-dislike ${disliked ? 'active' : ''}`}
+          onClick={() => onDislike(outfit.id)}
+        >
+          <IconThumbsDown size={18} color={disliked ? '#7a7189' : 'var(--text-secondary)'} />
+          <span>不喜欢</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function TodayOutfit() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [outfits, setOutfits] = useState<OutfitSuggestion[]>([]);
@@ -57,7 +145,10 @@ export default function TodayOutfit() {
   const [editingCity, setEditingCity] = useState(false);
   const [cityInput, setCityInput] = useState('');
   const [manualCity, setManualCity] = useState<string | null>(null);
-  const [selectedOutfit, setSelectedOutfit] = useState<number>(0);
+  const [likedOutfits, setLikedOutfits] = useState<Set<string>>(new Set());
+  const [dislikedOutfits, setDislikedOutfits] = useState<Set<string>>(new Set());
+  const [replacingOutfitIndex, setReplacingOutfitIndex] = useState<number | null>(null);
+  const [replacingPart, setReplacingPart] = useState<string | null>(null);
   const cityInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -125,6 +216,113 @@ export default function TodayOutfit() {
     setEditingCity(false);
     await settingsDB.set('city', 'auto');
     await loadData();
+  }
+
+  async function handleLike(id: string) {
+    const outfit = outfits.find((o) => o.id === id);
+    if (outfit) {
+      const itemsToUpdate: ClothingItem[] = [];
+      if (outfit.top) itemsToUpdate.push(outfit.top);
+      if (outfit.bottom) itemsToUpdate.push(outfit.bottom);
+      if (outfit.outerwear) itemsToUpdate.push(outfit.outerwear);
+      if (outfit.hat) itemsToUpdate.push(outfit.hat);
+      if (outfit.shoes) itemsToUpdate.push(outfit.shoes);
+      if (outfit.accessory) itemsToUpdate.push(outfit.accessory);
+
+      for (const item of itemsToUpdate) {
+        item.preferenceScore = (item.preferenceScore || 0) + 1;
+        await clothingDB.put(item);
+      }
+
+      const combinationKey = itemsToUpdate.map((i) => i.id).sort().join('-');
+      addOutfitCombination(combinationKey);
+
+      if (outfit.top && outfit.bottom) {
+        const colorKey = [outfit.top.color, outfit.bottom.color].sort().join('+');
+        addLikedColorScheme(colorKey);
+        const styleKey = `${outfit.top.category}+${outfit.bottom.category}`;
+        addLikedStyleCombo(styleKey);
+      }
+    }
+
+    setLikedOutfits((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+        setDislikedOutfits((d) => {
+          const dNext = new Set(d);
+          dNext.delete(id);
+          return dNext;
+        });
+      }
+      return next;
+    });
+  }
+
+  async function handleDislike(id: string) {
+    const outfit = outfits.find((o) => o.id === id);
+    if (outfit) {
+      const itemsToUpdate: ClothingItem[] = [];
+      if (outfit.top) itemsToUpdate.push(outfit.top);
+      if (outfit.bottom) itemsToUpdate.push(outfit.bottom);
+      if (outfit.outerwear) itemsToUpdate.push(outfit.outerwear);
+      if (outfit.hat) itemsToUpdate.push(outfit.hat);
+      if (outfit.shoes) itemsToUpdate.push(outfit.shoes);
+      if (outfit.accessory) itemsToUpdate.push(outfit.accessory);
+
+      for (const item of itemsToUpdate) {
+        item.preferenceScore = (item.preferenceScore || 0) - 1;
+        await clothingDB.put(item);
+        addToBlacklist(item.id, 7);
+      }
+
+      if (outfit.top && outfit.bottom) {
+        const colorKey = [outfit.top.color, outfit.bottom.color].sort().join('+');
+        addDislikedColorScheme(colorKey);
+        const styleKey = `${outfit.top.category}+${outfit.bottom.category}`;
+        addDislikedStyleCombo(styleKey);
+      }
+    }
+
+    setDislikedOutfits((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+        setLikedOutfits((l) => {
+          const lNext = new Set(l);
+          lNext.delete(id);
+          return lNext;
+        });
+      }
+      return next;
+    });
+  }
+
+  async function handleReplace(index: number, part: 'top' | 'bottom' | 'outerwear' | 'shoes' | 'hat' | 'accessory') {
+    if (!weather) return;
+
+    setReplacingOutfitIndex(index);
+    setReplacingPart(part);
+
+    const outfit = outfits[index];
+    const allClothes = await clothingDB.getAll();
+    
+    const newOutfit = replaceOutfitItem(outfit, part, allClothes, weather);
+    
+    if (newOutfit) {
+      setOutfits((prev) => {
+        const next = [...prev];
+        next[index] = newOutfit;
+        return next;
+      });
+    }
+
+    setReplacingOutfitIndex(null);
+    setReplacingPart(null);
   }
 
   const today = new Date().toISOString().split('T')[0];
@@ -254,66 +452,28 @@ export default function TodayOutfit() {
           <p className="hint">请先在「我的衣橱」中添加衣物，确保有上衣和下装</p>
         </div>
       ) : (
-        <div className="outfit-section">
-          <div className="outfit-tabs">
-            {outfits.map((_, i) => (
-              <button
-                key={i}
-                className={`outfit-tab ${selectedOutfit === i ? 'active' : ''}`}
-                onClick={() => setSelectedOutfit(i)}
-              >
-                方案 {i + 1}
-              </button>
+        <div className="outfit-cards-container">
+          <div className="outfit-section-header">
+            <h2>今日推荐穿搭</h2>
+            <span className="outfit-count">共 {outfits.length} 套方案</span>
+          </div>
+          <div className="outfit-cards-grid">
+            {outfits.map((outfit, index) => (
+              <OutfitCard
+                key={outfit.id}
+                outfit={outfit}
+                index={index}
+                onLike={handleLike}
+                onDislike={handleDislike}
+                onReplace={(part) => handleReplace(index, part)}
+                liked={likedOutfits.has(outfit.id)}
+                disliked={dislikedOutfits.has(outfit.id)}
+                replacingPart={replacingOutfitIndex === index ? replacingPart : null}
+              />
             ))}
           </div>
-
-          {outfits[selectedOutfit] && (
-            <div className="outfit-display">
-              <div className="outfit-reason">{outfits[selectedOutfit].reason}</div>
-              <div className="outfit-style-badges">
-                <span className="outfit-style-badge">{outfits[selectedOutfit].style}风格</span>
-                {outfits[selectedOutfit].crossStyle && (
-                  <span className="outfit-style-badge cross">混搭</span>
-                )}
-              </div>
-              <div className="outfit-items">
-                {renderClothingCard(outfits[selectedOutfit].top, '上衣')}
-                {renderClothingCard(outfits[selectedOutfit].bottom, '下装')}
-                {outfits[selectedOutfit].outerwear && renderClothingCard(outfits[selectedOutfit].outerwear, '外套')}
-                {outfits[selectedOutfit].hat && renderClothingCard(outfits[selectedOutfit].hat, '帽子')}
-                {outfits[selectedOutfit].shoes && renderClothingCard(outfits[selectedOutfit].shoes, '鞋子')}
-                {outfits[selectedOutfit].accessory && renderClothingCard(outfits[selectedOutfit].accessory, '配饰')}
-              </div>
-            </div>
-          )}
         </div>
       )}
-    </div>
-  );
-}
-
-function renderClothingCard(item: ClothingItem | undefined, label: string) {
-  if (!item) return null;
-  return (
-    <div className="outfit-item">
-      <div className="outfit-item-label">{label}</div>
-      <div className="outfit-item-image">
-        {item.image ? (
-          <img src={item.image} alt={item.category} />
-        ) : (
-          <div className="no-image-placeholder">
-            <span>{item.category}</span>
-          </div>
-        )}
-      </div>
-      <div className="outfit-item-info">
-        <span className="tag tag-category">{item.category}</span>
-        <span className="tag" style={{ backgroundColor: COLOR_HEX_MAP[item.color], color: item.color === '白' || item.color === '黄' ? '#333' : '#fff' }}>{item.color}</span>
-        <span className="tag tag-thickness">{item.thickness}</span>
-        {item.pattern && item.pattern !== '纯色' && (
-          <span className="tag tag-pattern">{item.pattern}</span>
-        )}
-      </div>
     </div>
   );
 }
