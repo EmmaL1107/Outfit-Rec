@@ -106,12 +106,12 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
 
 async function fetchWeatherByCoords(lat: number, lon: number, cityName: string): Promise<WeatherData> {
   const weatherRes = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`,
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,wind_speed_10m_max&timezone=auto&forecast_days=1`,
   );
   const weatherData = await weatherRes.json();
   const current = weatherData.current;
   const daily = weatherData.daily;
-  const code = current.weather_code as number;
+  const code = (daily?.weather_code?.[0] ?? current.weather_code) as number;
   const condition = WEATHER_CODE_MAP[code] || '多云';
   return {
     temperature: Math.round(current.temperature_2m),
@@ -121,8 +121,8 @@ async function fetchWeatherByCoords(lat: number, lon: number, cityName: string):
     isRaining: condition === '雨',
     isSnowing: condition === '雪',
     city: cityName,
-    humidity: current.relative_humidity_2m,
-    windSpeed: current.wind_speed_10m,
+    humidity: Math.round(current.relative_humidity_2m),
+    windSpeed: Math.round(daily?.wind_speed_10m_max?.[0] ?? current.wind_speed_10m),
   };
 }
 
