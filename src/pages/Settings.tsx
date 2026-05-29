@@ -30,7 +30,6 @@ export default function Settings() {
   async function handleSave() {
     const cityToSave = autoLocation ? 'auto' : settings.city;
     await settingsDB.set('city', cityToSave);
-    await settingsDB.set('weatherApiKey', settings.weatherApiKey);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -50,26 +49,7 @@ export default function Settings() {
       </div>
 
       <div className="settings-section">
-        <h3>天气数据源</h3>
-        <div className="form-group">
-          <label>和风天气 API Key</label>
-          <input
-            type="text"
-            value={settings.weatherApiKey}
-            onChange={(e) => setSettings((s) => ({ ...s, weatherApiKey: e.target.value.trim() }))}
-            placeholder="输入和风天气 API Key（可选）"
-          />
-          <p className="form-hint">
-            填写后使用中国气象局数据，与国内天气 App 数据一致；不填则使用 Open-Meteo（全球模型，中国地区可能不准确）
-          </p>
-          <p className="form-hint">
-            免费获取：前往 <a href="https://dev.qweather.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>dev.qweather.com</a> 注册，创建项目即可获得 Key（免费版每天 1000 次调用）
-          </p>
-        </div>
-      </div>
-
-      <div className="settings-section">
-        <h3>定位设置</h3>
+        <h3>天气设置</h3>
 
         <div className="location-toggle">
           <div className="location-toggle-label">
@@ -95,13 +75,9 @@ export default function Settings() {
               type="text"
               value={isAutoCity(settings.city) ? '' : settings.city}
               onChange={(e) => setSettings((s) => ({ ...s, city: e.target.value }))}
-              placeholder={settings.weatherApiKey ? '输入城市名称（中文/英文均可）' : '输入城市名称（英文，如 Shanghai）'}
+              placeholder="输入城市名称（中文/英文均可，如 北京、Shanghai）"
             />
-            <p className="form-hint">
-              {settings.weatherApiKey
-                ? '使用和风天气时支持中文城市名（如 北京、上海）'
-                : '未配置和风天气 Key 时，需输入英文城市名'}
-            </p>
+            <p className="form-hint">关闭自动定位后，需手动输入城市名称</p>
           </div>
         )}
       </div>
