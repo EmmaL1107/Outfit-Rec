@@ -50,6 +50,7 @@ export default function Wardrobe() {
   const [previewImage, setPreviewImage] = useState<string>('');
   const [showClearModal, setShowClearModal] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [removingBg, setRemovingBg] = useState(false);
   const [extractedColors, setExtractedColors] = useState<RGB[]>([]);
   const [taobaoText, setTaobaoText] = useState<string>('');
   const [harmonyResult, setHarmonyResult] = useState<ReturnType<typeof evaluateColorHarmony> | null>(null);
@@ -80,6 +81,20 @@ export default function Wardrobe() {
     if (file) {
       compressImage(file).then(setPreviewImage);
     }
+  }
+
+  async function handleRemoveBackground() {
+    if (!previewImage) return;
+    setRemovingBg(true);
+    try {
+      const { removeBackground } = await import('@imgly/background-removal');
+      const blob = await removeBackground(previewImage);
+      const url = URL.createObjectURL(blob);
+      setPreviewImage(url);
+    } catch (err) {
+      console.error('抠图失败:', err);
+    }
+    setRemovingBg(false);
   }
 
   function toggleScene(scene: ClothingScene) {
@@ -320,6 +335,16 @@ export default function Wardrobe() {
                   )}
                 </div>
                 <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                {previewImage && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleRemoveBackground}
+                    disabled={removingBg}
+                    style={{ marginTop: 8, width: '100%' }}
+                  >
+                    {removingBg ? '正在抠图中...' : '✂️ 自动抠图（去除背景）'}
+                  </button>
+                )}
               </div>
 
               {!editItem && (
