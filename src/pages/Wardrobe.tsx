@@ -25,7 +25,7 @@ import { clothingDB } from '../store/db';
 import { compressImage } from '../utils/image';
 import { generateTestClothes } from '../utils/testData';
 import { extractColorsFromImage, rgbToClothingColor, rgbToHex, evaluateColorHarmony, findClosestColorName, type RGB } from '../utils/colorAnalysis';
-import { parseTaobaoText, extractTextFromImage } from '../utils/taobaoParser';
+import { parseTaobaoText } from '../utils/taobaoParser';
 import { IconPlus, IconClose, IconRefreshCw } from '../components/Icons';
 
 type FilterState = {
@@ -50,9 +50,8 @@ export default function Wardrobe() {
   const [previewImage, setPreviewImage] = useState<string>('');
   const [showClearModal, setShowClearModal] = useState(false);
   const [scanning, setScanning] = useState(false);
-  const [scanMode, setScanMode] = useState<'photo' | 'taobao' | null>(null);
   const [extractedColors, setExtractedColors] = useState<RGB[]>([]);
-  const [ocrText, setOcrText] = useState<string>('');
+  const [taobaoText, setTaobaoText] = useState<string>('');
   const [harmonyResult, setHarmonyResult] = useState<ReturnType<typeof evaluateColorHarmony> | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const scanFileRef = useRef<HTMLInputElement>(null);
@@ -131,9 +130,8 @@ export default function Wardrobe() {
     setEditItem(null);
     setPreviewImage('');
     setExtractedColors([]);
-    setOcrText('');
+    setTaobaoText('');
     setHarmonyResult(null);
-    setScanMode(null);
     setForm({ category: '短袖', color: '黑', thickness: '适中', style: '休闲', pattern: '纯色', scene: ['日常'], season: ['春'] });
     if (fileRef.current) fileRef.current.value = '';
     if (scanFileRef.current) scanFileRef.current.value = '';
@@ -148,43 +146,17 @@ export default function Wardrobe() {
       const compressed = await compressImage(file, 800);
       setPreviewImage(compressed);
 
-      if (scanMode === 'photo') {
-        const colors = await extractColorsFromImage(compressed, 5, 'product');
-        setExtractedColors(colors);
+      const colors = await extractColorsFromImage(compressed, 5, 'product');
+      setExtractedColors(colors);
 
-        if (colors.length > 0) {
-          const primaryColor = rgbToClothingColor(colors[0]);
-          setForm((f) => ({ ...f, color: primaryColor }));
-        }
-
-        if (colors.length >= 2) {
-          const harmony = evaluateColorHarmony(colors.slice(0, 3));
-          setHarmonyResult(harmony);
-        }
+      if (colors.length > 0) {
+        const primaryColor = rgbToClothingColor(colors[0]);
+        setForm((f) => ({ ...f, color: primaryColor }));
       }
 
-      if (scanMode === 'taobao') {
-        const text = await extractTextFromImage(compressed);
-        setOcrText(text);
-
-        const parsed = parseTaobaoText(text);
-        setForm((f) => ({
-          ...f,
-          category: parsed.category || f.category,
-          color: parsed.color || f.color,
-          thickness: parsed.thickness || f.thickness,
-          style: parsed.style || f.style,
-          pattern: parsed.pattern || f.pattern,
-          scene: parsed.scenes,
-          season: parsed.seasons,
-        }));
-
-        const colors = await extractColorsFromImage(compressed, 3, 'product');
-        setExtractedColors(colors);
-        if (colors.length > 0 && !parsed.color) {
-          const primaryColor = rgbToClothingColor(colors[0]);
-          setForm((f) => ({ ...f, color: primaryColor }));
-        }
+      if (colors.length >= 2) {
+        const harmony = evaluateColorHarmony(colors.slice(0, 3));
+        setHarmonyResult(harmony);
       }
     } catch (err) {
       console.error('扫描失败:', err);
@@ -192,10 +164,23 @@ export default function Wardrobe() {
     setScanning(false);
   }
 
-  function startScan(mode: 'photo' | 'taobao') {
-    setScanMode(mode);
+  function handleTaobaoTextParse() {
+    if (!taobaoText.trim()) return;
+    const parsed = parseTaobaoText(taobaoText);
+    setForm((f) => ({
+      ...f,
+      category: parsed.category || f.category,
+      color: parsed.color || f.color,
+      thickness: parsed.thickness || f.thickness,
+      style: parsed.style || f.style,
+      pattern: parsed.pattern || f.pattern,
+      scene: parsed.scenes.length > 0 ? parsed.scenes : f.scene,
+      season: parsed.seasons.length > 0 ? parsed.seasons : f.season,
+    }));
+  }
+
+  function startScan() {
     setExtractedColors([]);
-    setOcrText('');
     setHarmonyResult(null);
     setTimeout(() => scanFileRef.current?.click(), 100);
   }
@@ -246,7 +231,7 @@ export default function Wardrobe() {
           <button className="btn btn-secondary" onClick={() => setShowGenerateModal(true)}>
             <IconRefreshCw size={16} /> 生成测试衣物
           </button>
-          <button className="btn btn-primary" onClick={() => { setShowAdd(true); setScanMode(null); }}>
+          <button className="btn btn-primary" onClick={() => { setShowAdd(true); }}>
             <IconPlus size={16} color="#fff" /> 添加衣物
           </button>
         </div>
@@ -339,16 +324,13 @@ export default function Wardrobe() {
 
               {!editItem && (
                 <div className="scan-section">
-                  <label>智能识别</label>
+                  <label>智能识色</label>
                   <div className="scan-buttons">
-                    <button className="btn btn-secondary scan-btn" onClick={() => startScan('photo')} disabled={scanning}>
-                      📷 拍照识色
-                    </button>
-                    <button className="btn btn-secondary scan-btn" onClick={() => startScan('taobao')} disabled={scanning}>
-                      🛒 淘宝截图识别
+                    <button className="btn btn-secondary scan-btn" onClick={() => startScan()} disabled={scanning}>
+                      📷 拍照/截图识色
                     </button>
                   </div>
-                  <p className="form-hint">拍照识色：自动提取衣服颜色 | 淘宝截图：自动识别商品信息</p>
+                  <p className="form-hint">上传衣服照片或商品截图，自动提取颜色</p>
                   <input ref={scanFileRef} type="file" accept="image/*" onChange={handleScanFile} style={{ display: 'none' }} />
                 </div>
               )}
@@ -384,10 +366,25 @@ export default function Wardrobe() {
                 </div>
               )}
 
-              {ocrText && (
-                <div className="ocr-result">
-                  <label>识别文字</label>
-                  <div className="ocr-text">{ocrText.slice(0, 200)}{ocrText.length > 200 ? '...' : ''}</div>
+              {!editItem && (
+                <div className="taobao-text-section">
+                  <label>淘宝商品描述（可选）</label>
+                  <textarea
+                    className="taobao-text-input"
+                    value={taobaoText}
+                    onChange={(e) => setTaobaoText(e.target.value)}
+                    placeholder="粘贴淘宝商品标题或描述文字，如：&#10;2024新款法式复古碎花连衣裙女夏&#10;自动识别款式、颜色、风格等标签"
+                    rows={3}
+                  />
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleTaobaoTextParse}
+                    disabled={!taobaoText.trim()}
+                    style={{ marginTop: 6, width: '100%' }}
+                  >
+                    智能识别标签
+                  </button>
+                  <p className="form-hint">从淘宝 App 复制商品标题，粘贴到这里自动匹配标签</p>
                 </div>
               )}
 

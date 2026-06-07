@@ -690,6 +690,42 @@ body {
   word-break: break-all;
 }
 
+.taobao-text-section {
+  margin-bottom: 16px;
+}
+
+.taobao-text-section label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.taobao-text-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg-warm);
+  resize: vertical;
+  font-family: inherit;
+}
+
+.taobao-text-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-bg);
+}
+
+.taobao-text-input::placeholder {
+  color: var(--text-light);
+  font-size: 12px;
+}
+
 .weather-card {
   background: var(--gradient-weather);
   border-radius: var(--radius);

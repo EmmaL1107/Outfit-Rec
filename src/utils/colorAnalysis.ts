@@ -131,11 +131,20 @@ function isSkinTone(rgb: RGB): boolean {
   );
 }
 
-function isLikelyBackground(rgb: RGB): boolean {
+// Common Taobao/ecommerce UI colors to filter out
+function isUIColor(rgb: RGB): boolean {
   const hsl = rgbToHsl(rgb);
-  // Very light colors (likely white/light background)
+  // Taobao orange (#FF5000, #FF6600, #FF4400 etc.)
+  if (hsl.h >= 10 && hsl.h <= 30 && hsl.s > 70 && hsl.l > 45 && hsl.l < 70) return true;
+  // Red sale tags (#FF0000, #E4393C etc.)
+  if (hsl.h >= 345 || hsl.h < 10) {
+    if (hsl.s > 60 && hsl.l > 35 && hsl.l < 65) return true;
+  }
+  // Bright yellow/gold buttons
+  if (hsl.h >= 40 && hsl.h <= 55 && hsl.s > 70 && hsl.l > 50) return true;
+  // Very light gray (UI backgrounds)
   if (hsl.l > 92 && hsl.s < 15) return true;
-  // Very dark (likely black background)
+  // Very dark (black UI bars)
   if (hsl.l < 8) return true;
   return false;
 }
@@ -146,11 +155,26 @@ export function extractColorsFromImage(imageSrc: string, maxColors = 5, mode: 'p
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const sampleSize = 150;
+      const ctx = canvas.getContext('2d')!;
+
+      // In product mode: center-crop to focus on the product image area
+      // Taobao screenshots: product photo is typically in the top-center 60% area
+      let sx = 0, sy = 0, sw = img.width, sh = img.height;
+      if (mode === 'product' && img.width > 0 && img.height > 0) {
+        // Crop: top 65% of image, center 80% horizontally
+        const cropTop = Math.floor(img.height * 0.65);
+        const cropLeft = Math.floor(img.width * 0.1);
+        const cropWidth = Math.floor(img.width * 0.8);
+        sx = cropLeft;
+        sy = 0;
+        sw = cropWidth;
+        sh = cropTop;
+      }
+
+      const sampleSize = 120;
       canvas.width = sampleSize;
       canvas.height = sampleSize;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sampleSize, sampleSize);
 
       const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
       const allPixels: RGB[] = [];
@@ -169,7 +193,7 @@ export function extractColorsFromImage(imageSrc: string, maxColors = 5, mode: 'p
         allPixels.push(rgb);
 
         if (mode === 'product') {
-          if (!isSkinTone(rgb) && !isLikelyBackground(rgb)) {
+          if (!isSkinTone(rgb) && !isUIColor(rgb)) {
             productPixels.push(rgb);
           }
         }
@@ -184,14 +208,13 @@ export function extractColorsFromImage(imageSrc: string, maxColors = 5, mode: 'p
 
       const dominantColors = kMeansClustering(pixels, maxColors + 2);
 
-      // Filter out remaining skin tones and backgrounds, then sort by chroma (product relevance)
+      // Filter out remaining unwanted colors, then sort by chroma (product relevance)
       const filtered = dominantColors
         .filter((rgb) => {
           if (mode === 'product') {
-            const hsl = rgbToHsl(rgb);
-            // Filter out skin tones from results
             if (isSkinTone(rgb)) return false;
-            // Filter out near-white/near-black
+            if (isUIColor(rgb)) return false;
+            const hsl = rgbToHsl(rgb);
             if (hsl.l > 90 && hsl.s < 10) return false;
             if (hsl.l < 10) return false;
           }
@@ -201,7 +224,6 @@ export function extractColorsFromImage(imageSrc: string, maxColors = 5, mode: 'p
           const hslA = rgbToHsl(a);
           const hslB = rgbToHsl(b);
           // Prioritize: higher saturation = more likely product color
-          // Then moderate lightness (not too dark, not too light)
           const scoreA = hslA.s * 2 + (50 - Math.abs(hslA.l - 50)) * 0.5;
           const scoreB = hslB.s * 2 + (50 - Math.abs(hslB.l - 50)) * 0.5;
           return scoreB - scoreA;
