@@ -6,143 +6,175 @@ export interface ColorPair {
 }
 
 // ============================================================
-// 1. 配色规则：同色系、邻近色、中性色百搭（黑/白/灰/牛仔蓝）
+// 配色系统：基于时尚搭配实战经验
+// 核心原则：全身不超过3个颜色，中性色百搭，彩色需搭配和谐
 // ============================================================
 
-// 中性色：百搭，可以和任何颜色搭配
 export const NEUTRAL_COLORS: ClothingColor[] = ['黑', '白', '灰', '卡其'];
-
-// 牛仔蓝作为特殊中性色，百搭
-export const DENIM_NEUTRAL: ClothingColor = '蓝';
-
 export const HIGH_SATURATION_COLORS: ClothingColor[] = ['红', '蓝', '黄', '绿'];
-
 export const ACCENT_COLORS: ClothingColor[] = ['红', '蓝', '绿', '黄', '粉色'];
 
-// 同色系搭配（深浅不同的同一色相）
+// ============================================================
+// 配色分级：从最经典到禁忌
+// ============================================================
+
+// S级：时尚界公认的经典配色，永远不会出错
+export const S_TIER_PAIRS: ColorPair[] = [
+  { c1: '黑', c2: '白' },     // 永恒经典
+  { c1: '白', c2: '黑' },
+  { c1: '蓝', c2: '白' },     // 蓝白条纹/牛仔+白T
+  { c1: '白', c2: '蓝' },
+  { c1: '黑', c2: '蓝' },     // 深蓝+黑，高级感
+  { c1: '蓝', c2: '黑' },
+];
+
+// A级：非常好看的搭配，日常出街/通勤首选
+export const A_TIER_PAIRS: ColorPair[] = [
+  { c1: '白', c2: '卡其' },   // 干净温暖
+  { c1: '卡其', c2: '白' },
+  { c1: '黑', c2: '红' },     // 醒目优雅
+  { c1: '红', c2: '黑' },
+  { c1: '灰', c2: '白' },     // 极简高级
+  { c1: '白', c2: '灰' },
+  { c1: '灰', c2: '黑' },     // 深灰层次
+  { c1: '黑', c2: '灰' },
+  { c1: '白', c2: '粉色' },   // 甜美温柔
+  { c1: '粉色', c2: '白' },
+  { c1: '蓝', c2: '卡其' },   // 英伦风
+  { c1: '卡其', c2: '蓝' },
+  { c1: '蓝', c2: '粉色' },   // 冷暖对比，意外和谐
+  { c1: '粉色', c2: '蓝' },
+];
+
+// B级：好看的搭配，有品味但不张扬
+export const B_TIER_PAIRS: ColorPair[] = [
+  { c1: '卡其', c2: '黑' },   // 大地色系
+  { c1: '黑', c2: '卡其' },
+  { c1: '灰', c2: '粉色' },   // 柔和高级
+  { c1: '粉色', c2: '灰' },
+  { c1: '白', c2: '绿' },     // 清新自然
+  { c1: '绿', c2: '白' },
+  { c1: '卡其', c2: '绿' },   // 大地色系
+  { c1: '绿', c2: '卡其' },
+  { c1: '白', c2: '黄' },     // 明亮活力
+  { c1: '黄', c2: '白' },
+  { c1: '黑', c2: '绿' },     // 深沉有质感
+  { c1: '绿', c2: '黑' },
+  { c1: '灰', c2: '蓝' },     // 冷调高级
+  { c1: '蓝', c2: '灰' },
+  { c1: '黑', c2: '粉色' },   // 甜酷风
+  { c1: '粉色', c2: '黑' },
+  { c1: '卡其', c2: '灰' },   // 温和通勤
+  { c1: '灰', c2: '卡其' },
+];
+
+// C级：可以接受但不出彩，至少有一个中性色托底
+export const C_TIER_PAIRS: ColorPair[] = [
+  { c1: '黑', c2: '黄' },
+  { c1: '黄', c2: '黑' },
+  { c1: '灰', c2: '绿' },
+  { c1: '绿', c2: '灰' },
+  { c1: '灰', c2: '黄' },
+  { c1: '黄', c2: '灰' },
+  { c1: '灰', c2: '红' },
+  { c1: '红', c2: '灰' },
+  { c1: '白', c2: '红' },
+  { c1: '红', c2: '白' },
+  { c1: '卡其', c2: '粉色' },
+  { c1: '粉色', c2: '卡其' },
+  { c1: '卡其', c2: '黄' },
+  { c1: '黄', c2: '卡其' },
+  { c1: '蓝', c2: '绿' },     // 冷色系邻近
+  { c1: '绿', c2: '蓝' },
+  { c1: '蓝', c2: '黄' },     // 对比但可接受
+  { c1: '黄', c2: '蓝' },
+];
+
+// 同色系搭配（深浅不同）
 export const MONOCHROME_PAIRS: ColorPair[] = [
   { c1: '黑', c2: '灰' },
   { c1: '灰', c2: '黑' },
   { c1: '白', c2: '卡其' },
-  { c1: '卡其', c2: '卡其' },
+  { c1: '卡其', c2: '白' },
   { c1: '蓝', c2: '蓝' },
   { c1: '灰', c2: '灰' },
+  { c1: '黑', c2: '黑' },
+  { c1: '白', c2: '白' },
+  { c1: '卡其', c2: '卡其' },
   { c1: '粉色', c2: '粉色' },
-  { c1: '绿', c2: '绿' },
   { c1: '红', c2: '红' },
-  { c1: '蓝', c2: '灰' },
-  { c1: '粉色', c2: '红' },
-  { c1: '红', c2: '粉色' },
-  { c1: '绿', c2: '卡其' },
-  { c1: '黄', c2: '卡其' },
-];
-
-// 邻近色搭配（色轮上相邻的色相）
-export const ADJACENT_PAIRS: ColorPair[] = [
-  { c1: '蓝', c2: '绿' },     // 蓝绿邻近
-  { c1: '绿', c2: '蓝' },
-  { c1: '蓝', c2: '粉色' },   // 蓝粉邻近（冷色系）
-  { c1: '粉色', c2: '蓝' },
-  { c1: '红', c2: '粉色' },   // 红粉邻近（暖色系）
-  { c1: '黄', c2: '绿' },     // 黄绿邻近
-  { c1: '绿', c2: '黄' },
-  { c1: '红', c2: '黄' },     // 红黄邻近（暖色系）
-  { c1: '黄', c2: '红' },
-  { c1: '卡其', c2: '黄' },   // 卡其黄邻近
-  { c1: '卡其', c2: '绿' },   // 卡其绿邻近
-];
-
-// 中性色百搭对（黑/白/灰/牛仔蓝 + 任何色）
-export const BASIC_NEUTRAL_PAIRS: ColorPair[] = [
-  { c1: '白', c2: '黑' },
-  { c1: '黑', c2: '白' },
-  { c1: '白', c2: '灰' },
-  { c1: '灰', c2: '黑' },
-  { c1: '白', c2: '卡其' },
-  { c1: '卡其', c2: '黑' },
-  { c1: '黑', c2: '蓝' },
-  { c1: '白', c2: '蓝' },
+  { c1: '绿', c2: '绿' },
+  { c1: '蓝', c2: '灰' },     // 深蓝浅灰同色系
   { c1: '灰', c2: '蓝' },
-  { c1: '卡其', c2: '蓝' },
-  // 中性色 + 彩色百搭
-  { c1: '黑', c2: '红' },
-  { c1: '白', c2: '红' },
-  { c1: '灰', c2: '红' },
-  { c1: '黑', c2: '绿' },
-  { c1: '白', c2: '绿' },
-  { c1: '灰', c2: '绿' },
-  { c1: '黑', c2: '黄' },
-  { c1: '白', c2: '黄' },
-  { c1: '灰', c2: '黄' },
-  { c1: '黑', c2: '粉色' },
-  { c1: '白', c2: '粉色' },
-  { c1: '灰', c2: '粉色' },
-  { c1: '蓝', c2: '红' },
-  { c1: '蓝', c2: '绿' },
-  { c1: '蓝', c2: '黄' },
-  { c1: '蓝', c2: '粉色' },
+  { c1: '粉色', c2: '红' },   // 粉红同色系
+  { c1: '红', c2: '粉色' },
+  { c1: '绿', c2: '卡其' },   // 绿卡其大地色系
+  { c1: '卡其', c2: '绿' },
 ];
 
-// 夏季清凉配色（浅色系）
+// 禁忌配色：时尚灾难
+export const FORBIDDEN_COLOR_PAIRS: ColorPair[] = [
+  { c1: '红', c2: '绿' },       // 圣诞树
+  { c1: '红', c2: '粉色' },     // 暖色打架
+  { c1: '黄', c2: '绿' },       // 非洲国旗
+  { c1: '黄', c2: '粉色' },     // 荧光灾难
+  { c1: '红', c2: '黄' },       // 麦当劳
+  { c1: '绿', c2: '粉色' },     // 不搭
+];
+
+// 夏季清凉配色
 export const SUMMER_COOL_PAIRS: ColorPair[] = [
   { c1: '白', c2: '蓝' },
   { c1: '蓝', c2: '白' },
   { c1: '白', c2: '卡其' },
-  { c1: '绿', c2: '白' },
-  { c1: '黄', c2: '白' },
   { c1: '白', c2: '粉色' },
   { c1: '粉色', c2: '白' },
+  { c1: '白', c2: '绿' },
+  { c1: '白', c2: '灰' },
   { c1: '蓝', c2: '粉色' },
   { c1: '粉色', c2: '蓝' },
-  { c1: '白', c2: '灰' },
-  { c1: '卡其', c2: '白' },
 ];
 
-// 秋冬暖色配色（深色系）
+// 秋冬暖色配色
 export const WARM_AUTUMN_PAIRS: ColorPair[] = [
-  { c1: '卡其', c2: '卡其' },
-  { c1: '卡其', c2: '黑' },
-  { c1: '卡其', c2: '白' },
   { c1: '黑', c2: '黑' },
+  { c1: '黑', c2: '灰' },
   { c1: '灰', c2: '黑' },
   { c1: '黑', c2: '蓝' },
   { c1: '蓝', c2: '黑' },
+  { c1: '黑', c2: '红' },
   { c1: '红', c2: '黑' },
-  { c1: '绿', c2: '黑' },
-  { c1: '粉色', c2: '灰' },
+  { c1: '卡其', c2: '黑' },
+  { c1: '黑', c2: '卡其' },
+  { c1: '卡其', c2: '卡其' },
   { c1: '卡其', c2: '灰' },
+  { c1: '灰', c2: '卡其' },
+  { c1: '黑', c2: '绿' },
+  { c1: '绿', c2: '黑' },
+  { c1: '黑', c2: '粉色' },
+  { c1: '粉色', c2: '灰' },
 ];
 
-// 安全白名单（所有被认可的搭配）
+// 安全白名单
 export const SAFE_COLOR_WHITELIST: ColorPair[] = [
-  ...BASIC_NEUTRAL_PAIRS,
+  ...S_TIER_PAIRS,
+  ...A_TIER_PAIRS,
+  ...B_TIER_PAIRS,
+  ...C_TIER_PAIRS,
   ...MONOCHROME_PAIRS,
-  ...ADJACENT_PAIRS,
   ...SUMMER_COOL_PAIRS,
   ...WARM_AUTUMN_PAIRS,
 ];
 
-// 和谐对比色（经典搭配）
+// 和谐对比色
 export const HARMONIOUS_CONTRAST_PAIRS: ColorPair[] = [
-  { c1: '蓝', c2: '白' },
-  { c1: '蓝', c2: '黑' },
-  { c1: '蓝', c2: '卡其' },
-  { c1: '卡其', c2: '白' },
-  { c1: '黑', c2: '红' },
-  { c1: '白', c2: '红' },
-  { c1: '黑', c2: '白' },
-  { c1: '灰', c2: '蓝' },
-  { c1: '白', c2: '粉色' },
-  { c1: '蓝', c2: '粉色' },
+  ...S_TIER_PAIRS,
+  ...A_TIER_PAIRS,
 ];
 
-// 禁忌配色（不和谐的搭配）
-export const FORBIDDEN_COLOR_PAIRS: ColorPair[] = [
-  { c1: '红', c2: '绿' },     // 圣诞色
-  { c1: '红', c2: '粉色' },   // 暖色冲突
-  { c1: '黄', c2: '绿' },     // 过于刺眼
-  { c1: '黄', c2: '粉色' },   // 暖色冲突
-];
+// ============================================================
+// 配色评分
+// ============================================================
 
 export function isColorPairInList(c1: ClothingColor, c2: ClothingColor, list: ColorPair[]): boolean {
   return list.some((p) => (p.c1 === c1 && p.c2 === c2) || (p.c1 === c2 && p.c2 === c1));
@@ -153,7 +185,7 @@ export function isInWhitelist(c1: ClothingColor, c2: ClothingColor): boolean {
 }
 
 export function isBasicNeutralPair(c1: ClothingColor, c2: ClothingColor): boolean {
-  return isColorPairInList(c1, c2, BASIC_NEUTRAL_PAIRS);
+  return isColorPairInList(c1, c2, S_TIER_PAIRS) || isColorPairInList(c1, c2, A_TIER_PAIRS);
 }
 
 export function isMonochromeDepthPair(c1: ClothingColor, c2: ClothingColor): boolean {
@@ -161,7 +193,7 @@ export function isMonochromeDepthPair(c1: ClothingColor, c2: ClothingColor): boo
 }
 
 export function isAdjacentColorPair(c1: ClothingColor, c2: ClothingColor): boolean {
-  return isColorPairInList(c1, c2, ADJACENT_PAIRS);
+  return isColorPairInList(c1, c2, B_TIER_PAIRS);
 }
 
 export function isSummerCoolPair(c1: ClothingColor, c2: ClothingColor): boolean {
@@ -180,9 +212,8 @@ export function isForbiddenColorPair(c1: ClothingColor, c2: ClothingColor): bool
   return isColorPairInList(c1, c2, FORBIDDEN_COLOR_PAIRS);
 }
 
-// Check if a color is neutral (百搭)
 export function isNeutralColor(color: ClothingColor): boolean {
-  return NEUTRAL_COLORS.includes(color) || color === DENIM_NEUTRAL;
+  return NEUTRAL_COLORS.includes(color) || color === '蓝';
 }
 
 export function isHighSaturation(color: ClothingColor): boolean {
@@ -194,8 +225,7 @@ export function countHighSaturationMainItems(colors: ClothingColor[]): number {
 }
 
 export function hasTooManyHighSaturationMainItems(topColor: ClothingColor, bottomColor: ClothingColor): boolean {
-  const count = countHighSaturationMainItems([topColor, bottomColor]);
-  return count > 1;
+  return countHighSaturationMainItems([topColor, bottomColor]) > 1;
 }
 
 export function hasHighSaturationClash(colors: ClothingColor[]): boolean {
@@ -231,83 +261,62 @@ export function isAccentColorAllowed(
   if (isNeutralColor(accentColor)) return true;
   if (accentColor === topColor || accentColor === bottomColor) return true;
   if (isHarmoniousContrast(accentColor, topColor) || isHarmoniousContrast(accentColor, bottomColor)) return true;
-  if (isAdjacentColorPair(accentColor, topColor) || isAdjacentColorPair(accentColor, bottomColor)) return true;
+  if (isInWhitelist(accentColor, topColor) || isInWhitelist(accentColor, bottomColor)) return true;
   return false;
 }
 
-// ============================================================
-// 配色评分：按规则优先级
-// 1. 中性色百搭（黑/白/灰/牛仔蓝 + 任何色）→ 最高分
-// 2. 同色系深浅搭配 → 高分
-// 3. 邻近色搭配 → 中高分
-// 4. 夏季清凉/秋冬暖色 → 季节加分
-// 5. 和谐对比色 → 中分
-// 6. 禁忌配色 → 负分
-// ============================================================
-
+// 核心评分函数：按时尚审美分级打分
 export function scoreColorPair(c1: ClothingColor, c2: ClothingColor): number {
+  // 禁忌配色：直接否决
   if (isForbiddenColorPair(c1, c2)) return -100;
-  if (hasTooManyHighSaturationMainItems(c1, c2)) return -80;
 
-  // 中性色百搭（黑/白/灰/牛仔蓝 + 任何色）
-  if (isBasicNeutralPair(c1, c2)) return 35;
+  // 两个高饱和色撞在一起
+  if (hasTooManyHighSaturationMainItems(c1, c2)) return -60;
 
-  // 同色系深浅搭配
-  if (isMonochromeDepthPair(c1, c2)) return 30;
+  // S级：经典永恒
+  if (isColorPairInList(c1, c2, S_TIER_PAIRS)) return 40;
 
-  // 邻近色搭配
-  if (isAdjacentColorPair(c1, c2)) return 25;
+  // A级：日常首选
+  if (isColorPairInList(c1, c2, A_TIER_PAIRS)) return 30;
 
-  // 夏季清凉/秋冬暖色
-  if (isSummerCoolPair(c1, c2)) return 22;
-  if (isWarmAutumnPair(c1, c2)) return 22;
+  // 同色系深浅
+  if (isColorPairInList(c1, c2, MONOCHROME_PAIRS)) return 28;
 
-  // 白名单
-  if (isInWhitelist(c1, c2)) return 20;
+  // B级：有品味
+  if (isColorPairInList(c1, c2, B_TIER_PAIRS)) return 20;
 
-  // 和谐对比色
-  if (isHarmoniousContrast(c1, c2)) return 15;
+  // C级：可以接受
+  if (isColorPairInList(c1, c2, C_TIER_PAIRS)) return 10;
 
   // 至少有一个中性色
-  if (NEUTRAL_COLORS.includes(c1) || NEUTRAL_COLORS.includes(c2)) return 10;
+  if (NEUTRAL_COLORS.includes(c1) || NEUTRAL_COLORS.includes(c2) || c1 === '蓝' || c2 === '蓝') return 5;
 
-  return -5;
+  // 两个彩色撞色且不在任何列表中
+  return -20;
 }
 
 // ============================================================
-// 2. 版型规则：上宽下窄、上窄下宽、同松同紧
+// 版型规则：上宽下窄、上窄下宽、同松同紧
 // ============================================================
 
 export type Silhouette = '宽松' | '修身' | '常规';
 
-// 根据款式判断版型
 export function getSilhouette(category: ClothingCategory, style: ClothingStyle): Silhouette {
-  // 宽松上装
   if (['卫衣'].includes(category)) return '宽松';
   if (['短袖', '长袖'].includes(category) && ['休闲', '运动', '韩系', '甜酷'].includes(style)) return '宽松';
   if (['短袖', '长袖'].includes(category) && ['正式', '简约'].includes(style)) return '修身';
-
-  // 修身上装
   if (['衬衫'].includes(category) && ['正式', '简约'].includes(style)) return '修身';
   if (['毛衣'].includes(category) && ['正式', '简约'].includes(style)) return '修身';
-
-  // 宽松下装
   if (['长裤'].includes(category) && ['休闲', '运动', '韩系', '日系'].includes(style)) return '宽松';
   if (['裙子'].includes(category) && ['休闲', '韩系', '复古'].includes(style)) return '宽松';
-
-  // 修身下装
   if (['长裤'].includes(category) && ['正式', '简约'].includes(style)) return '修身';
-  if (['裙子'].includes(category) && ['正式', '简约', '约会'].includes(style)) return '修身';
+  if (['裙子'].includes(category) && ['正式', '简约'].includes(style)) return '修身';
   if (['短裤'].includes(category)) return '常规';
-
-  // 外套
   if (['外套'].includes(category) && ['休闲', '运动'].includes(style)) return '宽松';
   if (['外套'].includes(category) && ['正式', '简约'].includes(style)) return '修身';
-
   return '常规';
 }
 
-// 版型搭配评分
 export function scoreSilhouette(
   topCategory: ClothingCategory,
   topStyle: ClothingStyle,
@@ -316,21 +325,15 @@ export function scoreSilhouette(
 ): number {
   const topSil = getSilhouette(topCategory, topStyle);
   const bottomSil = getSilhouette(bottomCategory, bottomStyle);
-
-  // 上宽下窄 → 经典搭配
   if (topSil === '宽松' && bottomSil === '修身') return 20;
-  // 上窄下宽 → 时尚搭配
   if (topSil === '修身' && bottomSil === '宽松') return 18;
-  // 同松同紧 → 统一感
   if (topSil === bottomSil) return 15;
-  // 常规 + 任何 → 安全
   if (topSil === '常规' || bottomSil === '常规') return 10;
-  // 宽松 + 宽松（不是同松同紧时）→ 略扣分
   return 5;
 }
 
 // ============================================================
-// 3. 场合规则
+// 场合规则
 // ============================================================
 
 export interface OccasionTemplate {
@@ -444,7 +447,7 @@ export function getOccasionBonus(
 }
 
 // ============================================================
-// 4. 季节规则：夏=浅色系/透气；冬=深色系/厚材质
+// 季节规则：夏=浅色系/透气；冬=深色系/厚材质
 // ============================================================
 
 export const LIGHT_COLORS: ClothingColor[] = ['白', '卡其', '粉色', '黄'];
@@ -460,7 +463,6 @@ export interface SeasonalOutfitTemplate {
 }
 
 export const SEASONAL_TEMPLATES: SeasonalOutfitTemplate[] = [
-  // 夏季：浅色系 + 透气
   {
     season: '夏',
     topCategory: '短袖',
@@ -482,7 +484,6 @@ export const SEASONAL_TEMPLATES: SeasonalOutfitTemplate[] = [
     preferredColors: [{ c1: '白', c2: '蓝' }, { c1: '粉色', c2: '白' }, { c1: '白', c2: '卡其' }, { c1: '粉色', c2: '蓝' }],
     style: '休闲',
   },
-  // 春秋：中性色为主
   {
     season: '春秋',
     topCategory: '衬衫',
@@ -512,7 +513,6 @@ export const SEASONAL_TEMPLATES: SeasonalOutfitTemplate[] = [
     preferredColors: [{ c1: '粉色', c2: '白' }, { c1: '卡其', c2: '白' }, { c1: '卡其', c2: '卡其' }],
     style: '韩系',
   },
-  // 冬季：深色系 + 厚材质
   {
     season: '秋冬',
     topCategory: '卫衣',
@@ -551,26 +551,19 @@ export function getSeasonalBonus(
     if (tmpl.season !== season) continue;
     if (tmpl.topCategory !== topCategory || tmpl.bottomCategory !== bottomCategory) continue;
     if (tmpl.outerwearCategory && tmpl.outerwearCategory !== outerwearCategory) continue;
-
     bonus += 8;
-
     const colorMatch = tmpl.preferredColors.some(
       (p) => (p.c1 === topColor && p.c2 === bottomColor) || (p.c1 === bottomColor && p.c2 === topColor)
     );
     if (colorMatch) bonus += 15;
   }
-
-  // 季节颜色加分
   if (season === '夏') {
-    // 夏季：浅色系加分
     if (LIGHT_COLORS.includes(topColor)) bonus += 5;
     if (LIGHT_COLORS.includes(bottomColor)) bonus += 5;
   } else if (season === '秋冬') {
-    // 冬季：深色系加分
     if (DARK_COLORS_FOR_SEASON.includes(topColor)) bonus += 5;
     if (DARK_COLORS_FOR_SEASON.includes(bottomColor)) bonus += 5;
   }
-
   return bonus;
 }
 
@@ -586,30 +579,10 @@ export interface StyleExclusionRule {
 }
 
 export const STYLE_EXCLUSION_RULES: StyleExclusionRule[] = [
-  {
-    topStyle: '正式',
-    topCategory: '衬衫',
-    forbiddenBottomStyles: ['运动'],
-    forbiddenBottomCategories: ['短裤'],
-  },
-  {
-    topStyle: '正式',
-    topCategory: '毛衣',
-    forbiddenBottomStyles: ['运动'],
-    forbiddenBottomCategories: ['短裤'],
-  },
-  {
-    topStyle: '运动',
-    topCategory: '短袖',
-    forbiddenBottomStyles: ['正式'],
-    forbiddenBottomCategories: ['裙子'],
-  },
-  {
-    topStyle: '运动',
-    topCategory: '卫衣',
-    forbiddenBottomStyles: ['正式'],
-    forbiddenBottomCategories: ['裙子'],
-  },
+  { topStyle: '正式', topCategory: '衬衫', forbiddenBottomStyles: ['运动'], forbiddenBottomCategories: ['短裤'] },
+  { topStyle: '正式', topCategory: '毛衣', forbiddenBottomStyles: ['运动'], forbiddenBottomCategories: ['短裤'] },
+  { topStyle: '运动', topCategory: '短袖', forbiddenBottomStyles: ['正式'], forbiddenBottomCategories: ['裙子'] },
+  { topStyle: '运动', topCategory: '卫衣', forbiddenBottomStyles: ['正式'], forbiddenBottomCategories: ['裙子'] },
 ];
 
 export function hasStyleExclusion(
@@ -622,8 +595,7 @@ export function hasStyleExclusion(
     (rule) =>
       rule.topStyle === topStyle &&
       rule.topCategory === topCategory &&
-      (rule.forbiddenBottomStyles.includes(bottomStyle) ||
-        rule.forbiddenBottomCategories.includes(bottomCategory))
+      (rule.forbiddenBottomStyles.includes(bottomStyle) || rule.forbiddenBottomCategories.includes(bottomCategory))
   );
 }
 
@@ -641,100 +613,28 @@ export interface OutfitTemplate {
 }
 
 export const OUTFIT_TEMPLATES: OutfitTemplate[] = [
-  {
-    style: '休闲',
-    topCategories: ['短袖', '长袖', '卫衣'],
-    bottomCategories: ['长裤', '短裤'],
-    outerwearCategories: ['外套'],
-    shoeCategories: ['鞋子'],
-    description: '休闲日常风',
-  },
-  {
-    style: '简约',
-    topCategories: ['衬衫', '长袖', '毛衣'],
-    bottomCategories: ['长裤', '裙子'],
-    outerwearCategories: ['外套'],
-    shoeCategories: ['鞋子'],
-    description: '简约通勤风',
-  },
-  {
-    style: '运动',
-    topCategories: ['短袖', '卫衣'],
-    bottomCategories: ['长裤', '短裤'],
-    outerwearCategories: ['外套'],
-    shoeCategories: ['鞋子'],
-    description: '轻户外运动风',
-  },
-  {
-    style: '正式',
-    topCategories: ['衬衫', '毛衣'],
-    bottomCategories: ['长裤', '裙子'],
-    outerwearCategories: ['外套'],
-    shoeCategories: ['鞋子'],
-    description: '正式通勤风',
-  },
-  {
-    style: '韩系',
-    topCategories: ['短袖', '长袖', '衬衫', '卫衣'],
-    bottomCategories: ['长裤', '裙子', '短裤'],
-    outerwearCategories: ['外套'],
-    shoeCategories: ['鞋子'],
-    description: '韩系潮流风',
-  },
-  {
-    style: '日系',
-    topCategories: ['衬衫', '长袖', '短袖'],
-    bottomCategories: ['长裤', '裙子'],
-    outerwearCategories: ['外套'],
-    shoeCategories: ['鞋子'],
-    description: '日系简约风',
-  },
-  {
-    style: '复古',
-    topCategories: ['衬衫', '长袖', '毛衣'],
-    bottomCategories: ['长裤', '裙子'],
-    outerwearCategories: ['外套'],
-    shoeCategories: ['鞋子'],
-    description: '复古文艺风',
-  },
-  {
-    style: '甜酷',
-    topCategories: ['短袖', '卫衣', '长袖'],
-    bottomCategories: ['长裤', '短裤', '裙子'],
-    outerwearCategories: ['外套'],
-    shoeCategories: ['鞋子'],
-    description: '甜酷个性风',
-  },
-  {
-    style: '学院风',
-    topCategories: ['衬衫', '毛衣', '卫衣'],
-    bottomCategories: ['长裤', '裙子'],
-    outerwearCategories: ['外套'],
-    shoeCategories: ['鞋子'],
-    description: '学院青春风',
-  },
+  { style: '休闲', topCategories: ['短袖', '长袖', '卫衣'], bottomCategories: ['长裤', '短裤'], outerwearCategories: ['外套'], shoeCategories: ['鞋子'], description: '休闲日常风' },
+  { style: '简约', topCategories: ['衬衫', '长袖', '毛衣'], bottomCategories: ['长裤', '裙子'], outerwearCategories: ['外套'], shoeCategories: ['鞋子'], description: '简约通勤风' },
+  { style: '运动', topCategories: ['短袖', '卫衣'], bottomCategories: ['长裤', '短裤'], outerwearCategories: ['外套'], shoeCategories: ['鞋子'], description: '轻户外运动风' },
+  { style: '正式', topCategories: ['衬衫', '毛衣'], bottomCategories: ['长裤', '裙子'], outerwearCategories: ['外套'], shoeCategories: ['鞋子'], description: '正式通勤风' },
+  { style: '韩系', topCategories: ['短袖', '长袖', '衬衫', '卫衣'], bottomCategories: ['长裤', '裙子', '短裤'], outerwearCategories: ['外套'], shoeCategories: ['鞋子'], description: '韩系潮流风' },
+  { style: '日系', topCategories: ['衬衫', '长袖', '短袖'], bottomCategories: ['长裤', '裙子'], outerwearCategories: ['外套'], shoeCategories: ['鞋子'], description: '日系简约风' },
+  { style: '复古', topCategories: ['衬衫', '长袖', '毛衣'], bottomCategories: ['长裤', '裙子'], outerwearCategories: ['外套'], shoeCategories: ['鞋子'], description: '复古文艺风' },
+  { style: '甜酷', topCategories: ['短袖', '卫衣', '长袖'], bottomCategories: ['长裤', '短裤', '裙子'], outerwearCategories: ['外套'], shoeCategories: ['鞋子'], description: '甜酷个性风' },
+  { style: '学院风', topCategories: ['衬衫', '毛衣', '卫衣'], bottomCategories: ['长裤', '裙子'], outerwearCategories: ['外套'], shoeCategories: ['鞋子'], description: '学院青春风' },
 ];
 
 export function getTemplateForStyle(style: ClothingStyle): OutfitTemplate | undefined {
   return OUTFIT_TEMPLATES.find((t) => t.style === style);
 }
 
-export function matchesTemplate(
-  style: ClothingStyle,
-  topCategory: ClothingCategory,
-  bottomCategory: ClothingCategory,
-): boolean {
+export function matchesTemplate(style: ClothingStyle, topCategory: ClothingCategory, bottomCategory: ClothingCategory): boolean {
   const template = getTemplateForStyle(style);
   if (!template) return true;
   return template.topCategories.includes(topCategory) && template.bottomCategories.includes(bottomCategory);
 }
 
-export function scoreTemplateMatch(
-  style: ClothingStyle,
-  topCategory: ClothingCategory,
-  bottomCategory: ClothingCategory,
-  outerwearCategory?: ClothingCategory,
-): number {
+export function scoreTemplateMatch(style: ClothingStyle, topCategory: ClothingCategory, bottomCategory: ClothingCategory, outerwearCategory?: ClothingCategory): number {
   const template = getTemplateForStyle(style);
   if (!template) return 0;
   let score = 0;
