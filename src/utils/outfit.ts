@@ -18,6 +18,7 @@ import {
   isInWhitelist,
   isBasicNeutralPair,
   isMonochromeDepthPair,
+  isAdjacentColorPair,
   isSummerCoolPair,
   isWarmAutumnPair,
   isHarmoniousContrast,
@@ -31,6 +32,8 @@ import {
   scoreTemplateMatch,
   hasStyleExclusion,
   getSeasonalBonus,
+  getOccasionBonus,
+  scoreSilhouette,
   NEUTRAL_COLORS,
 } from './outfitTemplates';
 
@@ -179,9 +182,11 @@ function scoreOutfitWithTemplates(
   style: ClothingStyle,
   temp: number,
   season?: string,
+  scene?: string,
 ): number {
   let score = 0;
 
+  // 1. 配色评分：同色系 > 邻近色 > 中性色百搭 > 和谐对比
   score += scoreColorPair(top.color, bottom.color);
   if (outerwear) {
     score += scoreColorPair(top.color, outerwear.color);
@@ -192,10 +197,15 @@ function scoreOutfitWithTemplates(
 
   if (isBasicNeutralPair(top.color, bottom.color)) score += 20;
   else if (isMonochromeDepthPair(top.color, bottom.color)) score += 18;
-  else if (isSummerCoolPair(top.color, bottom.color)) score += 16;
-  else if (isWarmAutumnPair(top.color, bottom.color)) score += 16;
+  else if (isAdjacentColorPair(top.color, bottom.color)) score += 16;
+  else if (isSummerCoolPair(top.color, bottom.color)) score += 14;
+  else if (isWarmAutumnPair(top.color, bottom.color)) score += 14;
   else if (isHarmoniousContrast(top.color, bottom.color)) score += 8;
 
+  // 2. 版型评分：上宽下窄、上窄下宽、同松同紧
+  score += scoreSilhouette(top.category, top.style, bottom.category, bottom.style);
+
+  // 3. 场合评分
   score += scoreTemplateMatch(style, top.category, bottom.category, outerwear?.category);
 
   if (top.style === style && bottom.style === style) score += 20;
@@ -214,8 +224,14 @@ function scoreOutfitWithTemplates(
 
   if (hasHighSaturationClash(allColors)) score -= 40;
 
+  // 4. 季节评分
   if (season) {
     score += getSeasonalBonus(top.category, bottom.category, outerwear?.category, top.color, bottom.color, season);
+  }
+
+  // 5. 场合评分（基于衣物场景标签）
+  if (scene) {
+    score += getOccasionBonus(scene, top.category, bottom.category, top.color, bottom.color, style);
   }
 
   score += (top.preferenceScore || 0) * 2;
@@ -290,6 +306,7 @@ function buildOutfitStrict(
   usedIds: Set<string>,
   eventId?: string,
   season?: string,
+  scene?: string,
 ): OutfitSuggestion | null {
   const availTops = tops.filter((c) => !usedIds.has(c.id));
   const availBottoms = bottoms.filter((c) => !usedIds.has(c.id));
@@ -338,7 +355,7 @@ function buildOutfitStrict(
         }
       }
 
-      const score = scoreOutfitWithTemplates(top, bottom, outerwear, style, temp, season);
+      const score = scoreOutfitWithTemplates(top, bottom, outerwear, style, temp, season, scene);
       candidates.push({ top, bottom, outerwear, score });
     }
   }
@@ -373,6 +390,7 @@ function buildOutfitRelaxed(
   usedIds: Set<string>,
   eventId?: string,
   season?: string,
+  scene?: string,
 ): OutfitSuggestion | null {
   const availTops = tops.filter((c) => !usedIds.has(c.id));
   const availBottoms = bottoms.filter((c) => !usedIds.has(c.id));
@@ -417,7 +435,7 @@ function buildOutfitRelaxed(
       }
     }
 
-    const score = scoreOutfitWithTemplates(top, bottom, outerwear, primaryStyle, temp, season);
+    const score = scoreOutfitWithTemplates(top, bottom, outerwear, primaryStyle, temp, season, scene);
     candidates.push({ bottom, outerwear, score });
   }
 
@@ -504,16 +522,21 @@ function tryGenerate(
       ? `最低${weather.tempMin}°C（休息日可能外出，注意晚间保暖）`
       : `最高${weather.tempMax}°C（工作日中午较热，穿少一点）`;
 
+  // Determine primary scene for the day
+  const primaryScene = weekend ? '日常' : '通勤';
+
   if (todayEvents.length > 0) {
     for (const event of todayEvents) {
       const eventDressCode = event.dressCode as DressCode;
       const allowedStyles = STYLE_DRESS_CODE_MAP[eventDressCode] || ['休闲'];
+      // Derive scene from dress code
+      const eventScene = eventDressCode === '正式' ? '正式会议' : eventDressCode === '运动' ? '运动' : '通勤';
       for (const style of allowedStyles) {
         if (usedStyles.has(style)) continue;
         const outfit = buildOutfitStrict(
           tops, bottoms, outerwears, hats, shoes, accessories,
           style, `为事件「${event.title}」搭配，着装要求：${eventDressCode}。${tempNote}`,
-          temp, usedIds, event.id, season,
+          temp, usedIds, event.id, season, eventScene,
         );
         if (outfit && validateOutfitCompatibility(outfit.top!, outfit.bottom!, outfit.outerwear)) {
           suggestions.push(outfit);
@@ -531,7 +554,7 @@ function tryGenerate(
           const outfit = buildOutfitRelaxed(
             tops, bottoms, outerwears, hats, shoes, accessories,
             style, `为事件「${event.title}」搭配，着装要求：${eventDressCode}。${tempNote}`,
-            temp, usedIds, event.id, season,
+            temp, usedIds, event.id, season, eventScene,
           );
           if (outfit && validateOutfitCompatibility(outfit.top!, outfit.bottom!, outfit.outerwear)) {
             suggestions.push(outfit);
@@ -555,7 +578,7 @@ function tryGenerate(
     const outfit = buildOutfitStrict(
       tops, bottoms, outerwears, hats, shoes, accessories,
       style, `今日${dayType}，${weather.condition}，${tempNote}，推荐${style}风格`,
-      temp, usedIds, undefined, season,
+      temp, usedIds, undefined, season, primaryScene,
     );
     if (outfit && validateOutfitCompatibility(outfit.top!, outfit.bottom!, outfit.outerwear)) {
       suggestions.push(outfit);
@@ -572,7 +595,7 @@ function tryGenerate(
     const outfit = buildOutfitRelaxed(
       tops, bottoms, outerwears, hats, shoes, accessories,
       style, `今日${dayType}，${weather.condition}，${tempNote}，推荐${style}风格`,
-      temp, usedIds, undefined, season,
+      temp, usedIds, undefined, season, primaryScene,
     );
     if (outfit && validateOutfitCompatibility(outfit.top!, outfit.bottom!, outfit.outerwear)) {
       suggestions.push(outfit);
@@ -591,7 +614,7 @@ function tryGenerate(
       const outfit = buildOutfitRelaxed(
         tops, bottoms, outerwears, hats, shoes, accessories,
         style, `今日${dayType}，${weather.condition}，${tempNote}，推荐${style}风格`,
-        temp, usedIds, undefined, season,
+        temp, usedIds, undefined, season, primaryScene,
       );
       if (outfit && validateOutfitCompatibility(outfit.top!, outfit.bottom!, outfit.outerwear)) {
         suggestions.push(outfit);
