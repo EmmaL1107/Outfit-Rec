@@ -4,20 +4,17 @@ import Wardrobe from './pages/Wardrobe';
 import TodayOutfit from './pages/TodayOutfit';
 import Calendar from './pages/Calendar';
 import Settings from './pages/Settings';
-import './App.css';
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="app">
-        <main className="app-main">
-          <Routes>
-            <Route path="/" element={<TodayOutfit />} />
-            <Route path="/wardrobe" element={<Wardrobe />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
-        </main>
+      <div className="min-h-screen bg-[var(--color-background)]">
+        <Routes>
+          <Route path="/" element={<TodayOutfit />} />
+          <Route path="/wardrobe" element={<Wardrobe />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/settings" element={<Settings />} />
+        </Routes>
         <TabBar />
       </div>
     </BrowserRouter>

@@ -16,13 +16,12 @@ import {
   IconSparkle,
 } from '../components/Icons';
 
-function DressCodeIcon({ code, size = 16 }: { code: string; size?: number }) {
-  const color = 'currentColor';
+function DressCodeIcon({ code, size = 14 }: { code: string; size?: number }) {
   switch (code) {
-    case '正式': return <IconBriefcase size={size} color={color} />;
-    case '运动': return <IconRunning size={size} color={color} />;
-    case '简约': return <IconSparkle size={size} color={color} />;
-    default: return <IconShirt size={size} color={color} />;
+    case '正式': return <IconBriefcase size={size} />;
+    case '运动': return <IconRunning size={size} />;
+    case '简约': return <IconSparkle size={size} />;
+    default: return <IconShirt size={size} />;
   }
 }
 
@@ -127,143 +126,223 @@ export default function Calendar() {
   const today = format(new Date(), 'yyyy-MM-dd');
 
   return (
-    <div className="page calendar-page">
-      <div className="page-header">
-        <h1>日历 & 事件</h1>
-        <button className="btn btn-primary" onClick={() => openAddModal()}>
-          <IconPlus size={16} color="#fff" /> 添加事件
-        </button>
-      </div>
-
-      <div className="calendar-container">
-        <div className="calendar-nav">
-          <button className="btn btn-ghost" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-            <IconChevronLeft size={18} />
-          </button>
-          <h3>{format(currentMonth, 'yyyy年 M月', { locale: zhCN })}</h3>
-          <button className="btn btn-ghost" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-            <IconChevronRight size={18} />
+    <div className="min-h-screen bg-white pb-24">
+      {/* HEADER */}
+      <section className="max-w-lg mx-auto px-5 pt-10 pb-6">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <p className="text-[11px] tracking-[0.3em] text-gray-500 mb-1.5">MY</p>
+            <h1 className="text-[28px] font-bold text-black tracking-tight">CALENDAR</h1>
+          </div>
+          <button
+            className="w-9 h-9 bg-black text-white rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors"
+            onClick={() => openAddModal()}
+          >
+            <IconPlus size={16} />
           </button>
         </div>
+        <p className="text-[13px] text-gray-500 mt-1">日程与着装安排</p>
+      </section>
 
-        <div className="calendar-grid">
-          {['日', '一', '二', '三', '四', '五', '六'].map((d) => (
-            <div key={d} className="calendar-header-cell">{d}</div>
-          ))}
-          {monthDays.map((day, i) => {
-            if (!day) return <div key={`empty-${i}`} className="calendar-cell empty" />;
-            const dateStr = format(day, 'yyyy-MM-dd');
-            const dayEvents = getEventsForDate(dateStr);
-            const isToday = dateStr === today;
-            const isSelected = dateStr === selectedDate;
-            const isCurrentMonth = isSameMonth(day, currentMonth);
+      {/* CALENDAR */}
+      <section className="max-w-lg mx-auto px-5">
+        <div className="border border-[var(--color-border)] rounded-lg p-5">
+          {/* Month Navigation */}
+          <div className="flex items-center justify-between mb-5">
+            <button
+              className="p-1.5 text-gray-400 hover:text-black transition-colors"
+              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+            >
+              <IconChevronLeft size={18} />
+            </button>
+            <h2 className="text-[15px] font-semibold text-black">
+              {format(currentMonth, 'yyyy年 M月', { locale: zhCN })}
+            </h2>
+            <button
+              className="p-1.5 text-gray-400 hover:text-black transition-colors"
+              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+            >
+              <IconChevronRight size={18} />
+            </button>
+          </div>
 
-            return (
-              <div
-                key={dateStr}
-                className={`calendar-cell ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''}`}
-                onClick={() => setSelectedDate(dateStr)}
-              >
-                <span className="day-number">{format(day, 'd')}</span>
-                {dayEvents.length > 0 && (
-                  <div className="day-dots">
-                    {dayEvents.slice(0, 3).map((e) => (
-                      <span key={e.id} className="day-dot-indicator" title={e.title} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="selected-date-section">
-        <div className="selected-date-header">
-          <h3>{format(new Date(selectedDate + 'T00:00:00'), 'M月d日 EEEE', { locale: zhCN })}</h3>
-          <button className="btn btn-sm" onClick={() => openAddModal(selectedDate)}>
-            <IconPlus size={14} /> 添加
-          </button>
-        </div>
-
-        {selectedDateEvents.length === 0 ? (
-          <div className="empty-state small">当天没有事件</div>
-        ) : (
-          <div className="event-list">
-            {selectedDateEvents.map((event) => (
-              <div key={event.id} className="event-card">
-                <div className="event-card-header">
-                  <span className="event-icon">
-                    <DressCodeIcon code={event.dressCode} size={18} />
-                  </span>
-                  <span className="event-card-title">{event.title}</span>
-                  <span className={`dress-code-badge ${event.dressCode}`}>{event.dressCode}</span>
-                </div>
-                {event.description && <p className="event-card-desc">{event.description}</p>}
-                <div className="event-card-actions">
-                  <button className="btn btn-sm" onClick={() => openEditModal(event)}>编辑</button>
-                  <button className="btn btn-sm btn-danger" onClick={() => handleDelete(event.id)}>删除</button>
-                </div>
+          {/* Weekday Headers */}
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {['日', '一', '二', '三', '四', '五', '六'].map((d) => (
+              <div key={d} className="text-center text-[11px] font-medium text-gray-400 py-2">
+                {d}
               </div>
             ))}
           </div>
-        )}
-      </div>
 
+          {/* Days Grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {monthDays.map((day, i) => {
+              if (!day) return <div key={`empty-${i}`} className="aspect-square" />;
+              const dateStr = format(day, 'yyyy-MM-dd');
+              const dayEvents = getEventsForDate(dateStr);
+              const isToday = dateStr === today;
+              const isSelected = dateStr === selectedDate;
+              const isCurrentMonth = isSameMonth(day, currentMonth);
+
+              return (
+                <button
+                  key={dateStr}
+                  className={`aspect-square flex flex-col items-center justify-center rounded-lg transition-all ${
+                    isSelected
+                      ? 'bg-black text-white'
+                      : isToday
+                        ? 'text-black font-semibold border border-black'
+                        : isCurrentMonth
+                          ? 'text-gray-700 hover:bg-gray-50'
+                          : 'text-gray-300'
+                  }`}
+                  onClick={() => setSelectedDate(dateStr)}
+                >
+                  <span className="text-[13px]">{format(day, 'd')}</span>
+                  {dayEvents.length > 0 && (
+                    <div className="flex gap-0.5 mt-0.5">
+                      {dayEvents.slice(0, 3).map((e) => (
+                        <span
+                          key={e.id}
+                          className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white/70' : 'bg-gray-400'}`}
+                          title={e.title}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Selected Date Events */}
+        <div className="mt-4 border border-[var(--color-border)] rounded-lg p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[13px] font-semibold text-black">
+              {format(new Date(selectedDate + 'T00:00:00'), 'M月d日 EEEE', { locale: zhCN })}
+            </h3>
+            <button
+              className="px-3 py-1.5 text-[12px] text-gray-500 hover:text-black hover:bg-gray-50 rounded-lg transition-colors"
+              onClick={() => openAddModal(selectedDate)}
+            >
+              <IconPlus size={13} /> 添加
+            </button>
+          </div>
+
+          {selectedDateEvents.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-[12px] text-gray-400">当天没有事件</p>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {selectedDateEvents.map((event) => (
+                <div key={event.id} className="p-3.5 bg-gray-50 rounded-lg border border-[var(--color-border)]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-gray-500">
+                      <DressCodeIcon code={event.dressCode} />
+                    </span>
+                    <span className="text-[13px] font-semibold text-black">{event.title}</span>
+                    <span className="ml-auto px-2 py-0.5 text-[10px] bg-gray-200 text-gray-600 rounded-full">
+                      {event.dressCode}
+                    </span>
+                  </div>
+                  {event.description && (
+                    <p className="text-[12px] text-gray-500 mb-2">{event.description}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      className="px-2.5 py-1 text-[11px] text-gray-500 hover:text-black hover:bg-white rounded-lg transition-colors border border-[var(--color-border)]"
+                      onClick={() => openEditModal(event)}
+                    >
+                      编辑
+                    </button>
+                    <button
+                      className="px-2.5 py-1 text-[11px] text-gray-500 hover:text-black hover:bg-white rounded-lg transition-colors border border-[var(--color-border)]"
+                      onClick={() => handleDelete(event.id)}
+                    >
+                      删除
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ADD MODAL */}
       {showAdd && (
-        <div className="modal-overlay" onClick={resetForm}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editEvent ? '编辑事件' : '添加事件'}</h2>
-              <button className="btn-close" onClick={resetForm}>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end justify-center">
+          <div className="bg-white w-full max-w-lg rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up">
+            <div className="sticky top-0 bg-white border-b border-[var(--color-border)] px-5 py-4 flex items-center justify-between z-10">
+              <h2 className="text-base font-semibold text-black">{editEvent ? '编辑事件' : '添加事件'}</h2>
+              <button className="p-1 text-gray-400 hover:text-black" onClick={resetForm}>
                 <IconClose size={18} />
               </button>
             </div>
-            <div className="modal-body">
-              <div className="form-group">
-                <label>事件名称</label>
+            <div className="px-5 py-5 space-y-5">
+              <div>
+                <label className="block text-[12px] font-medium text-gray-700 mb-2">事件名称</label>
                 <input
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="例如：面试、约会、运动..."
+                  className="w-full px-3 py-2.5 bg-gray-50 border border-[var(--color-border)] rounded-lg text-[13px] text-black focus:outline-none focus:border-black focus:bg-white"
                 />
               </div>
-              <div className="form-group">
-                <label>日期</label>
+              <div>
+                <label className="block text-[12px] font-medium text-gray-700 mb-2">日期</label>
                 <input
                   type="date"
                   value={form.date}
                   onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+                  className="w-full px-3 py-2.5 bg-gray-50 border border-[var(--color-border)] rounded-lg text-[13px] text-black focus:outline-none focus:border-black focus:bg-white"
                 />
               </div>
-              <div className="form-group">
-                <label>着装要求</label>
-                <div className="tag-selector">
+              <div>
+                <label className="block text-[12px] font-medium text-gray-700 mb-2">着装要求</label>
+                <div className="flex flex-wrap gap-2">
                   {DRESS_CODES.map((dc) => (
                     <button
                       key={dc}
-                      className={`tag-btn ${form.dressCode === dc ? 'active' : ''}`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-[12px] rounded-lg transition-colors ${
+                        form.dressCode === dc
+                          ? 'bg-black text-white'
+                          : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-[var(--color-border)]'
+                      }`}
                       onClick={() => setForm((f) => ({ ...f, dressCode: dc }))}
                     >
-                      <DressCodeIcon code={dc} size={14} /> {dc}
+                      <DressCodeIcon code={dc} size={12} /> {dc}
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="form-group">
-                <label>备注</label>
+              <div>
+                <label className="block text-[12px] font-medium text-gray-700 mb-2">备注</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   placeholder="可选，添加事件描述..."
                   rows={3}
+                  className="w-full px-3 py-2.5 bg-gray-50 border border-[var(--color-border)] rounded-lg text-[13px] text-black focus:outline-none focus:border-black focus:bg-white resize-none"
                 />
               </div>
             </div>
-            <div className="modal-footer">
-              <button className="btn btn-ghost" onClick={resetForm}>取消</button>
-              <button className="btn btn-primary" onClick={handleSave} disabled={!form.title.trim()}>
+            <div className="sticky bottom-0 bg-white border-t border-[var(--color-border)] px-5 py-4 flex gap-2">
+              <button
+                className="flex-1 px-4 py-2.5 text-gray-600 text-[13px] rounded-lg hover:bg-gray-50 transition-colors border border-[var(--color-border)]"
+                onClick={resetForm}
+              >
+                取消
+              </button>
+              <button
+                className="flex-1 px-4 py-2.5 bg-black text-white text-[13px] rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                onClick={handleSave}
+                disabled={!form.title.trim()}
+              >
                 {editEvent ? '保存修改' : '添加'}
               </button>
             </div>

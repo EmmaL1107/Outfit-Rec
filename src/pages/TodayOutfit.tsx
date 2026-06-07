@@ -2,20 +2,23 @@ import { useState, useEffect, useRef } from 'react';
 import type { ClothingItem, CalendarEvent, WeatherData, OutfitSuggestion } from '../types';
 import { COLOR_HEX_MAP } from '../types';
 import { clothingDB, eventDB, settingsDB } from '../store/db';
-import { fetchWeather, getDressingIndex, getSeasonFromMonth, isWeekend } from '../utils/weather';
+import { fetchWeather, getSeasonFromMonth } from '../utils/weather';
 import { generateOutfits, replaceOutfitItem } from '../utils/outfit';
-import { addToBlacklist, addOutfitCombination, addLikedColorScheme, addLikedStyleCombo, addDislikedColorScheme, addDislikedStyleCombo } from '../store/preference';
+import { 
+  addToBlacklist, 
+  addOutfitCombination, 
+  addLikedColorScheme, 
+  addLikedStyleCombo, 
+  addDislikedColorScheme, 
+  addDislikedStyleCombo 
+} from '../store/preference';
 import {
   IconSun,
   IconCloudSun,
   IconCloud,
   IconRain,
   IconSnow,
-  IconDroplet,
-  IconWind,
   IconLocation,
-  IconLeaf,
-  IconCoat,
   IconRefresh,
   IconEvent,
   IconBriefcase,
@@ -30,9 +33,8 @@ import {
   IconRefreshCw,
 } from '../components/Icons';
 
-
 function WeatherIcon({ condition }: { condition: string }) {
-  const props = { size: 42, color: '#fff' };
+  const props = { size: 24, color: '#111111' };
   switch (condition) {
     case '晴': return <IconSun {...props} />;
     case '多云': return <IconCloudSun {...props} />;
@@ -44,13 +46,21 @@ function WeatherIcon({ condition }: { condition: string }) {
 }
 
 function DressCodeIcon({ code }: { code: string }) {
-  const props = { size: 16, color: 'currentColor' };
+  const props = { size: 14, color: '#666666' };
   switch (code) {
     case '正式': return <IconBriefcase {...props} />;
     case '运动': return <IconRunning {...props} />;
     case '简约': return <IconSparkle {...props} />;
     default: return <IconShirt {...props} />;
   }
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 6) return 'GOOD NIGHT';
+  if (h < 12) return 'GOOD MORNING';
+  if (h < 18) return 'GOOD AFTERNOON';
+  return 'GOOD EVENING';
 }
 
 interface OutfitCardProps {
@@ -74,61 +84,86 @@ function OutfitCard({ outfit, index, onLike, onDislike, onReplace, liked, dislik
   if (outfit.accessory) items.push({ item: outfit.accessory, label: '配饰', part: 'accessory' });
 
   return (
-    <div className="outfit-card">
-      <div className="outfit-card-header">
-        <span className="outfit-number">方案 {index + 1}</span>
-        <span className="outfit-style-badge">{outfit.style}风格</span>
-        {outfit.crossStyle && (
-          <span className="outfit-style-badge cross">混搭</span>
-        )}
+    <div className="bg-white border border-[var(--color-border)] rounded-lg">
+      <div className="flex items-center justify-between px-5 pt-5 pb-4">
+        <span className="text-[11px] tracking-[0.2em] text-gray-500 font-medium">
+          LOOK {String(index + 1).padStart(2, '0')}
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-1 bg-gray-100 text-gray-700 text-[11px] font-medium rounded-full">
+            {outfit.style}
+          </span>
+          {outfit.crossStyle && (
+            <span className="px-2.5 py-1 bg-gray-900 text-white text-[11px] font-medium rounded-full">
+              混搭
+            </span>
+          )}
+        </div>
       </div>
       
-      <div className="outfit-reason">{outfit.reason}</div>
+      <p className="px-5 text-[13px] text-gray-500 mb-5 leading-relaxed">{outfit.reason}</p>
       
-      <div className="outfit-items-grid">
-        {items.map(({ item, label, part }) => (
-          <div key={item.id} className="outfit-item-card">
-            <button 
-              className={`replace-btn ${replacingPart === part ? 'loading' : ''}`}
-              onClick={() => onReplace(part)}
-              disabled={replacingPart !== null}
-            >
-              <IconRefreshCw size={12} />
-            </button>
-            <div className="outfit-item-label">{label}</div>
-            <div className="outfit-item-image-wrapper">
-              {item.image && <img src={item.image} alt={item.category} className="outfit-item-image" />}
-            </div>
-            <div className="outfit-item-info">
-              <span className="tag tag-category">{item.category}</span>
-              <span 
-                className="tag" 
-                style={{ 
-                  backgroundColor: COLOR_HEX_MAP[item.color], 
-                  color: item.color === '白' || item.color === '黄' ? '#333' : '#fff' 
-                }}
+      <div className="px-5 pb-5">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          {items.map(({ item, label, part }) => (
+            <div key={item.id} className="text-center relative group">
+              <button 
+                className="absolute -top-1 -right-1 w-5 h-5 bg-white border border-gray-200 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                onClick={() => onReplace(part)}
+                disabled={replacingPart !== null}
               >
-                {item.color}
-              </span>
-              <span className="tag tag-thickness">{item.thickness}</span>
+                <IconRefreshCw size={10} className="text-gray-500" />
+              </button>
+              <div className="text-[10px] text-gray-400 mb-1.5 tracking-wide">{label}</div>
+              <div className="aspect-[3/4] bg-gray-50 rounded overflow-hidden">
+                {item.image ? (
+                  <img src={item.image} alt={item.category} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">
+                    {item.category}
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-center gap-1 mt-2 flex-wrap">
+                <span className="px-1.5 py-0.5 bg-gray-50 text-gray-600 text-[9px] font-medium rounded">
+                  {item.category}
+                </span>
+                <span 
+                  className="px-1.5 py-0.5 text-[9px] font-medium rounded"
+                  style={{ 
+                    backgroundColor: COLOR_HEX_MAP[item.color], 
+                    color: item.color === '白' || item.color === '黄' ? '#333' : '#fff' 
+                  }}
+                >
+                  {item.color}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      <div className="outfit-card-actions">
+      <div className="flex justify-center gap-8 pt-4 pb-5 border-t border-[var(--color-border)]">
         <button 
-          className={`btn-action btn-like ${liked ? 'active' : ''}`}
+          className={`flex items-center gap-2 text-[13px] font-medium transition-all duration-200 ${
+            liked 
+              ? 'text-black' 
+              : 'text-gray-500 hover:text-black'
+          }`}
           onClick={() => onLike(outfit.id)}
         >
-          <IconThumbsUp size={18} color={liked ? '#c0616b' : 'var(--text-secondary)'} />
+          <IconThumbsUp size={15} />
           <span>喜欢</span>
         </button>
         <button 
-          className={`btn-action btn-dislike ${disliked ? 'active' : ''}`}
+          className={`flex items-center gap-2 text-[13px] font-medium transition-all duration-200 ${
+            disliked 
+              ? 'text-black' 
+              : 'text-gray-500 hover:text-black'
+          }`}
           onClick={() => onDislike(outfit.id)}
         >
-          <IconThumbsDown size={18} color={disliked ? '#7a7189' : 'var(--text-secondary)'} />
+          <IconThumbsDown size={15} />
           <span>不喜欢</span>
         </button>
       </div>
@@ -141,7 +176,7 @@ export default function TodayOutfit() {
   const [outfits, setOutfits] = useState<OutfitSuggestion[]>([]);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [locationStatus, setLocationStatus] = useState<'detecting' | 'success' | 'failed'>('detecting');
+  
   const [editingCity, setEditingCity] = useState(false);
   const [cityInput, setCityInput] = useState('');
   const [manualCity, setManualCity] = useState<string | null>(null);
@@ -163,18 +198,9 @@ export default function TodayOutfit() {
 
   async function loadData() {
     setLoading(true);
-    setLocationStatus('detecting');
 
     const cityToUse = manualCity || undefined;
     const weatherData = await fetchWeather(cityToUse);
-
-    setLocationStatus('failed');
-    if (weatherData.city && weatherData.city !== '未知' && weatherData.city !== '上海') {
-      setLocationStatus('success');
-    }
-    if (weatherData.temperature !== 22) {
-      setLocationStatus('success');
-    }
 
     setWeather(weatherData);
 
@@ -196,11 +222,9 @@ export default function TodayOutfit() {
     setEditingCity(false);
     await settingsDB.set('city', cityInput.trim());
     setLoading(true);
-    setLocationStatus('detecting');
 
     const weatherData = await fetchWeather(cityInput.trim());
     setWeather(weatherData);
-    setLocationStatus('success');
 
     const allClothes = await clothingDB.getAll();
     const allEvents = await eventDB.getAll();
@@ -209,13 +233,6 @@ export default function TodayOutfit() {
     const suggestions = generateOutfits(allClothes, weatherData, allEvents);
     setOutfits(suggestions);
     setLoading(false);
-  }
-
-  async function handleResetToAuto() {
-    setManualCity(null);
-    setEditingCity(false);
-    await settingsDB.set('city', 'auto');
-    await loadData();
   }
 
   async function handleLike(id: string) {
@@ -331,149 +348,184 @@ export default function TodayOutfit() {
 
   if (loading) {
     return (
-      <div className="page today-page">
-        <div className="empty-state">
-          <div className="loading-indicator">
-            <IconLocate size={24} color="var(--primary)" className="pulse-icon" />
-          </div>
-          <p>正在定位并获取天气...</p>
-          <p className="hint">首次使用时，浏览器会请求位置权限</p>
+      <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center">
+        <div className="text-center">
+          <IconLocate size={32} className="mx-auto mb-3 text-gray-400 animate-pulse" />
+          <p className="text-gray-500 text-sm">正在获取天气和穿搭建议...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="page today-page">
-      <div className="page-header">
-        <h1>今日穿搭</h1>
-        <button className="btn btn-ghost" onClick={loadData}>
-          <IconRefresh size={16} /> 刷新
-        </button>
-      </div>
-
-      {weather && (
-        <div className="weather-card">
-          <div className="weather-main">
-            <span className="weather-icon">
-              <WeatherIcon condition={weather.condition} />
-            </span>
-            <span className="weather-temp">{weather.temperature}°C</span>
-            <span className="weather-condition">{weather.condition}</span>
-            <span className="weather-temp-range">{weather.tempMin}°~{weather.tempMax}°</span>
+    <div className="min-h-screen bg-white pb-24">
+      {/* HERO SECTION */}
+      <section className="max-w-lg mx-auto px-5 pt-10 pb-8">
+        {/* Greeting */}
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <p className="text-[11px] tracking-[0.3em] text-gray-500 mb-2">{getGreeting()}</p>
+            <button 
+              className="flex items-center gap-1 text-black hover:text-gray-600 transition-colors"
+              onClick={loadData}
+            >
+              <IconRefresh size={14} />
+            </button>
           </div>
-          <div className="weather-details">
-            <span className="weather-detail-item">
-              <IconDroplet size={14} color="rgba(255,255,255,0.85)" /> 湿度 {weather.humidity}%
-            </span>
-            <span className="weather-detail-item">
-              <IconWind size={14} color="rgba(255,255,255,0.85)" /> 风速 {weather.windSpeed}km/h
-            </span>
-            <span
-              className="weather-detail-item city-display"
+        </div>
+
+        {weather && (
+          <div className="grid grid-cols-5 gap-5 mb-6">
+            {/* LEFT: Large temperature */}
+            <div className="col-span-2">
+              <div className="text-[80px] leading-none font-light text-black tracking-tight mb-4">
+                {weather.temperature}°
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[13px] text-gray-600">
+                  <IconLocation size={13} />
+                  <span>{weather.city}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[13px] text-gray-600">
+                  <WeatherIcon condition={weather.condition} />
+                  <span>{weather.condition}</span>
+                </div>
+                <div className="text-[13px] text-black mt-3 pt-3 border-t border-[var(--color-border)]">
+                  炎热，建议穿薄款短袖短裤
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT: Weather details card */}
+            <div className="col-span-3 border border-[var(--color-border)] rounded-lg p-5">
+              <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-gray-400">湿度</span>
+                  <span className="text-[13px] text-black font-medium">{weather.humidity}%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-gray-400">风速</span>
+                  <span className="text-[13px] text-black font-medium">{weather.windSpeed}km/h</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-gray-400">季节</span>
+                  <span className="text-[13px] text-black font-medium">{currentSeason}季</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-gray-400">类型</span>
+                  <span className="text-[13px] text-black font-medium">休息日</span>
+                </div>
+                <div className="col-span-2 flex justify-between items-center pt-3 border-t border-[var(--color-border)]">
+                  <span className="text-[11px] text-gray-400">最低 {weather.tempMin}°</span>
+                  <span className="text-[11px] text-gray-400">最高 {weather.tempMax}°</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingCity && (
+          <div className="flex items-center gap-2 mb-6">
+            <input
+              ref={cityInputRef}
+              type="text"
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCitySubmit();
+                if (e.key === 'Escape') setEditingCity(false);
+              }}
+              placeholder="输入城市名"
+              className="flex-1 px-4 py-2.5 bg-gray-50 border border-[var(--color-border)] rounded text-[13px] text-black focus:outline-none focus:border-black focus:bg-white transition-all"
+            />
+            <button 
+              className="px-3 py-2.5 bg-black text-white text-[13px] rounded hover:bg-gray-800 transition-colors"
+              onClick={handleCitySubmit}
+            >
+              <IconCheck size={14} />
+            </button>
+            <button 
+              className="px-3 py-2.5 text-gray-500 hover:text-gray-700 transition-colors"
+              onClick={() => setEditingCity(false)}
+            >
+              <IconClose size={14} />
+            </button>
+          </div>
+        )}
+
+        {/* Weather tip from clicking on city */}
+        {weather && !editingCity && (
+          <div className="text-[13px] text-gray-500">
+            <span 
+              className="cursor-pointer hover:text-black transition-colors"
               onClick={() => {
                 setCityInput(weather.city);
                 setEditingCity(true);
               }}
             >
-              <IconLocation size={14} color="rgba(255,255,255,0.85)" /> {weather.city}
-              <span className="city-edit-hint">点击修改</span>
-            </span>
-            <span className="weather-detail-item">
-              <IconLeaf size={14} color="rgba(255,255,255,0.85)" /> {currentSeason}季
-            </span>
-            <span className="weather-detail-item day-type-badge">
-              {isWeekend() ? '休息日' : '工作日'}
+              点击切换城市
             </span>
           </div>
-          <div className="dressing-index">
-            <IconCoat size={16} color="rgba(255,255,255,0.9)" /> {getDressingIndex(weather)}
+        )}
+      </section>
+
+      {/* TODAY'S PICKS */}
+      <section className="max-w-lg mx-auto px-5 pb-8">
+        {todayEvents.length > 0 && (
+          <div className="mb-8">
+            <p className="text-[11px] tracking-[0.2em] text-gray-500 mb-3 flex items-center gap-2">
+              <IconEvent size={12} />
+              今日事件
+            </p>
+            <div className="space-y-2">
+              {todayEvents.map((event) => (
+                <div key={event.id} className="flex items-center justify-between px-5 py-3.5 border border-[var(--color-border)] rounded-lg">
+                  <span className="text-[13px] text-black font-medium">{event.title}</span>
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-[11px] rounded-full">
+                    <DressCodeIcon code={event.dressCode} />
+                    <span>{event.dressCode}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
 
-          {editingCity && (
-            <div className="city-edit-bar">
-              <input
-                ref={cityInputRef}
-                type="text"
-                value={cityInput}
-                onChange={(e) => setCityInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleCitySubmit();
-                  if (e.key === 'Escape') setEditingCity(false);
-                }}
-                placeholder="输入城市名（英文/拼音，如 Shanghai, Guangzhou）"
-                className="city-input"
-              />
-              <button className="btn btn-sm city-confirm" onClick={handleCitySubmit}>
-                <IconCheck size={14} color="#fff" />
-              </button>
-              <button className="btn btn-sm city-cancel" onClick={() => setEditingCity(false)}>
-                <IconClose size={14} />
-              </button>
+        {outfits.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-[var(--color-border)]">
+              <IconShirt size={28} className="text-gray-400" />
             </div>
-          )}
-
-          {locationStatus === 'failed' && !editingCity && (
-            <div className="location-warning" onClick={() => {
-              setCityInput('');
-              setEditingCity(true);
-            }}>
-              <IconLocate size={14} color="rgba(255,255,255,0.9)" />
-              定位可能不准确，点击此处手动输入城市名
-            </div>
-          )}
-
-          {manualCity && !editingCity && (
-            <div className="location-warning auto-reset" onClick={handleResetToAuto}>
-              <IconLocate size={14} color="rgba(255,255,255,0.9)" />
-              当前使用手动城市「{manualCity}」，点击恢复自动定位
-            </div>
-          )}
-        </div>
-      )}
-
-      {todayEvents.length > 0 && (
-        <div className="today-events">
-          <h3><IconEvent size={18} color="var(--primary)" /> 今日事件</h3>
-          {todayEvents.map((event) => (
-            <div key={event.id} className="event-badge">
-              <span className="event-title">{event.title}</span>
-              <span className="event-dress-code">
-                <DressCodeIcon code={event.dressCode} /> {event.dressCode}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {outfits.length === 0 ? (
-        <div className="empty-state">
-          <p>暂无穿搭方案</p>
-          <p className="hint">请先在「我的衣橱」中添加衣物，确保有上衣和下装</p>
-        </div>
-      ) : (
-        <div className="outfit-cards-container">
-          <div className="outfit-section-header">
-            <h2>今日推荐穿搭</h2>
-            <span className="outfit-count">共 {outfits.length} 套方案</span>
+            <p className="text-gray-500 mb-2 text-[13px]">暂无穿搭方案</p>
+            <p className="text-[12px] text-gray-400">请先在「衣橱」中添加衣物，确保有上衣和下装</p>
           </div>
-          <div className="outfit-cards-grid">
-            {outfits.map((outfit, index) => (
-              <OutfitCard
-                key={outfit.id}
-                outfit={outfit}
-                index={index}
-                onLike={handleLike}
-                onDislike={handleDislike}
-                onReplace={(part) => handleReplace(index, part)}
-                liked={likedOutfits.has(outfit.id)}
-                disliked={dislikedOutfits.has(outfit.id)}
-                replacingPart={replacingOutfitIndex === index ? replacingPart : null}
-              />
-            ))}
+        ) : (
+          <div>
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <p className="text-[11px] tracking-[0.25em] text-gray-500 mb-1.5">TODAY'S</p>
+                <h2 className="text-[28px] font-bold text-black tracking-tight">PICKS</h2>
+              </div>
+              <span className="text-[11px] text-gray-400">共 {outfits.length} 套</span>
+            </div>
+            <div className="space-y-4">
+              {outfits.map((outfit, index) => (
+                <OutfitCard
+                  key={outfit.id}
+                  outfit={outfit}
+                  index={index}
+                  onLike={handleLike}
+                  onDislike={handleDislike}
+                  onReplace={(part) => handleReplace(index, part)}
+                  liked={likedOutfits.has(outfit.id)}
+                  disliked={dislikedOutfits.has(outfit.id)}
+                  replacingPart={replacingOutfitIndex === index ? replacingPart : null}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </section>
     </div>
   );
 }
