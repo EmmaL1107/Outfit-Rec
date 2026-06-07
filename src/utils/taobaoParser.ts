@@ -143,10 +143,128 @@ export function parseTaobaoText(text: string): ParsedTaobaoResult {
   };
 }
 
+function preprocessImageForOCR(imageSrc: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      // Use lower half + right side of image for Taobao (text is usually there)
+      // But also include full image as fallback
+      const w = img.width;
+      const h = img.height;
+
+      // For Taobao screenshots: crop to the text-heavy region (bottom 60%)
+      const cropY = Math.floor(h * 0.35);
+      const cropH = h - cropY;
+
+      canvas.width = w;
+      canvas.height = cropH;
+      const ctx = canvas.getContext('2d')!;
+
+      // Draw cropped region
+      ctx.drawImage(img, 0, cropY, w, cropH, 0, 0, w, cropH);
+
+      // Get image data for preprocessing
+      const imageData = ctx.getImageData(0, 0, w, cropH);
+      const data = imageData.data;
+
+      // Step 1: Convert to grayscale
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        data[i] = data[i + 1] = data[i + 2] = gray;
+      }
+
+      // Step 2: Increase contrast using histogram stretching
+      let minGray = 255;
+      let maxGray = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = data[i];
+        if (gray < minGray) minGray = gray;
+        if (gray > maxGray) maxGray = gray;
+      }
+
+      if (maxGray > minGray) {
+        const range = maxGray - minGray;
+        for (let i = 0; i < data.length; i += 4) {
+          const stretched = ((data[i] - minGray) / range) * 255;
+          data[i] = data[i + 1] = data[i + 2] = stretched;
+        }
+      }
+
+      // Step 3: Binarize (Otsu-like threshold) - makes text stand out
+      // Calculate threshold
+      const histogram = new Array(256).fill(0);
+      for (let i = 0; i < data.length; i += 4) {
+        histogram[Math.round(data[i])]++;
+      }
+
+      const totalPixels = data.length / 4;
+      let sum = 0;
+      for (let i = 0; i < 256; i++) sum += i * histogram[i];
+
+      let sumB = 0;
+      let wB = 0;
+      let threshold = 128;
+
+      for (let t = 0; t < 256; t++) {
+        wB += histogram[t];
+        if (wB === 0) continue;
+        const wF = totalPixels - wB;
+        if (wF === 0) break;
+
+        sumB += t * histogram[t];
+        const mB = sumB / wB;
+        const mF = (sum - sumB) / wF;
+        const variance = wB * wF * (mB - mF) * (mB - mF);
+
+        if (variance > 0) {
+          threshold = t;
+        }
+      }
+
+      // Apply threshold - make text black, background white
+      for (let i = 0; i < data.length; i += 4) {
+        const val = data[i] < threshold ? 0 : 255;
+        data[i] = data[i + 1] = data[i + 2] = val;
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => reject(new Error('图片预处理失败'));
+    img.src = imageSrc;
+  });
+}
+
 export async function extractTextFromImage(imageSrc: string): Promise<string> {
   const Tesseract = await import('tesseract.js');
-  const result = await Tesseract.recognize(imageSrc, 'chi_sim+eng', {
-    logger: () => {},
-  });
-  return result.data.text;
+
+  // Try preprocessed image first (cropped + enhanced for text)
+  let text = '';
+  try {
+    const preprocessed = await preprocessImageForOCR(imageSrc);
+    const result = await Tesseract.recognize(preprocessed, 'chi_sim+eng', {
+      logger: () => {},
+    });
+    text = result.data.text || '';
+  } catch {
+    // fallback
+  }
+
+  // If preprocessed didn't get much, try original image with full page
+  if (text.trim().length < 5) {
+    try {
+      const result = await Tesseract.recognize(imageSrc, 'chi_sim+eng', {
+        logger: () => {},
+      });
+      const originalText = result.data.text || '';
+      // Use whichever got more text
+      text = originalText.length > text.length ? originalText : text;
+    } catch {
+      // ignore
+    }
+  }
+
+  return text;
 }

@@ -149,7 +149,7 @@ export default function Wardrobe() {
       setPreviewImage(compressed);
 
       if (scanMode === 'photo') {
-        const colors = await extractColorsFromImage(compressed, 5);
+        const colors = await extractColorsFromImage(compressed, 5, 'product');
         setExtractedColors(colors);
 
         if (colors.length > 0) {
@@ -179,7 +179,7 @@ export default function Wardrobe() {
           season: parsed.seasons,
         }));
 
-        const colors = await extractColorsFromImage(compressed, 3);
+        const colors = await extractColorsFromImage(compressed, 3, 'product');
         setExtractedColors(colors);
         if (colors.length > 0 && !parsed.color) {
           const primaryColor = rgbToClothingColor(colors[0]);

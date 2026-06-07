@@ -122,20 +122,39 @@ function kMeansClustering(pixels: RGB[], k: number, maxIterations = 20): RGB[] {
   return centers;
 }
 
-export function extractColorsFromImage(imageSrc: string, maxColors = 5): Promise<RGB[]> {
+function isSkinTone(rgb: RGB): boolean {
+  const hsl = rgbToHsl(rgb);
+  return (
+    hsl.h >= 5 && hsl.h <= 45 &&
+    hsl.s >= 15 && hsl.s <= 75 &&
+    hsl.l >= 30 && hsl.l <= 85
+  );
+}
+
+function isLikelyBackground(rgb: RGB): boolean {
+  const hsl = rgbToHsl(rgb);
+  // Very light colors (likely white/light background)
+  if (hsl.l > 92 && hsl.s < 15) return true;
+  // Very dark (likely black background)
+  if (hsl.l < 8) return true;
+  return false;
+}
+
+export function extractColorsFromImage(imageSrc: string, maxColors = 5, mode: 'product' | 'general' = 'product'): Promise<RGB[]> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const sampleSize = 100;
+      const sampleSize = 150;
       canvas.width = sampleSize;
       canvas.height = sampleSize;
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
 
       const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
-      const pixels: RGB[] = [];
+      const allPixels: RGB[] = [];
+      const productPixels: RGB[] = [];
 
       for (let i = 0; i < imageData.data.length; i += 4) {
         const r = imageData.data[i];
@@ -145,22 +164,50 @@ export function extractColorsFromImage(imageSrc: string, maxColors = 5): Promise
         if (a < 128) continue;
         if (r > 240 && g > 240 && b > 240) continue;
         if (r < 15 && g < 15 && b < 15) continue;
-        pixels.push({ r, g, b });
+
+        const rgb = { r, g, b };
+        allPixels.push(rgb);
+
+        if (mode === 'product') {
+          if (!isSkinTone(rgb) && !isLikelyBackground(rgb)) {
+            productPixels.push(rgb);
+          }
+        }
       }
+
+      const pixels = (mode === 'product' && productPixels.length >= 20) ? productPixels : allPixels;
 
       if (pixels.length === 0) {
         resolve([]);
         return;
       }
 
-      const dominantColors = kMeansClustering(pixels, maxColors);
-      const sortedBySaturation = dominantColors.sort((a, b) => {
-        const hslA = rgbToHsl(a);
-        const hslB = rgbToHsl(b);
-        return (hslB.s + hslB.l * 0.5) - (hslA.s + hslA.l * 0.5);
-      });
+      const dominantColors = kMeansClustering(pixels, maxColors + 2);
 
-      resolve(sortedBySaturation);
+      // Filter out remaining skin tones and backgrounds, then sort by chroma (product relevance)
+      const filtered = dominantColors
+        .filter((rgb) => {
+          if (mode === 'product') {
+            const hsl = rgbToHsl(rgb);
+            // Filter out skin tones from results
+            if (isSkinTone(rgb)) return false;
+            // Filter out near-white/near-black
+            if (hsl.l > 90 && hsl.s < 10) return false;
+            if (hsl.l < 10) return false;
+          }
+          return true;
+        })
+        .sort((a, b) => {
+          const hslA = rgbToHsl(a);
+          const hslB = rgbToHsl(b);
+          // Prioritize: higher saturation = more likely product color
+          // Then moderate lightness (not too dark, not too light)
+          const scoreA = hslA.s * 2 + (50 - Math.abs(hslA.l - 50)) * 0.5;
+          const scoreB = hslB.s * 2 + (50 - Math.abs(hslB.l - 50)) * 0.5;
+          return scoreB - scoreA;
+        });
+
+      resolve(filtered.slice(0, maxColors));
     };
     img.onerror = () => reject(new Error('图片加载失败'));
     img.src = imageSrc;
