@@ -275,7 +275,7 @@ export default function Calendar() {
       {/* ADD MODAL */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end justify-center">
-          <div className="bg-white w-full max-w-lg rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up">
+          <div className="bg-white w-full max-w-lg rounded-2xl max-h-[85vh] overflow-y-auto animate-slide-up mb-24">
             <div className="sticky top-0 bg-white border-b border-[var(--color-border)] px-5 py-4 flex items-center justify-between z-10">
               <h2 className="text-base font-semibold text-black">{editEvent ? '编辑事件' : '添加事件'}</h2>
               <button className="p-1 text-gray-400 hover:text-black" onClick={resetForm}>
