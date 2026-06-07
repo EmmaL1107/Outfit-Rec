@@ -16,23 +16,23 @@ const CATEGORY_KEYWORDS: Record<ClothingCategory, string[]> = {
   '毛衣': ['毛衣', '针织衫', '针织', '毛衫', '羊毛衫', '开衫', '套头毛衣'],
   '外套': ['外套', '夹克', '风衣', '大衣', '西装外套', '牛仔外套', '皮衣', '棒球服', '棉服', '羽绒服', '冲锋衣', '马甲'],
   '长裤': ['长裤', '裤子', '牛仔裤', '西裤', '休闲裤', '运动裤', '阔腿裤', '直筒裤', '工装裤', '哈伦裤', '烟管裤'],
-  '短裤': ['短裤', '短裤', '五分裤', '热裤', '沙滩裤'],
+  '短裤': ['短裤', '五分裤', '热裤', '沙滩裤'],
   '裙子': ['裙子', '半身裙', '连衣裙', '长裙', '短裙', '百褶裙', 'a字裙', 'A字裙', '包臀裙', '碎花裙'],
   '帽子': ['帽子', '鸭舌帽', '棒球帽', '渔夫帽', '贝雷帽', '毛线帽', '遮阳帽'],
   '鞋子': ['鞋子', '运动鞋', '板鞋', '帆布鞋', '皮鞋', '高跟鞋', '凉鞋', '靴子', '短靴', '长靴', '老爹鞋', '小白鞋', '马丁靴'],
-  '配饰': ['配饰', '围巾', '领带', '腰带', '皮带', '手表', '项链', '耳环', '手链', '墨镜', '包包', '背包', '手提包'],
+  '配饰': ['配饰', '围巾', '领带', '腰带', '皮带', '手表', '项链', '耳环', '手链', '墨镜', '包包', '背包', '手提包', '手镯', '手环', '戒指', '发卡', '发带'],
 };
 
 const COLOR_KEYWORDS: Record<ClothingColor, string[]> = {
   '黑': ['黑色', '纯黑', '黑', '暗黑', '墨黑', '炭黑'],
   '白': ['白色', '纯白', '白', '米白', '奶白', '象牙白', '本白'],
   '灰': ['灰色', '灰', '浅灰', '深灰', '烟灰', '高级灰', '雾霾灰'],
-  '红': ['红色', '红', '酒红', '暗红', '正红', '大红', '砖红', '玫红', '枣红'],
-  '蓝': ['蓝色', '蓝', '深蓝', '浅蓝', '天蓝', '藏蓝', '湖蓝', '宝蓝', '牛仔蓝', '雾霾蓝'],
-  '绿': ['绿色', '绿', '墨绿', '浅绿', '军绿', '草绿', '薄荷绿', '牛油果绿', '抹茶绿'],
-  '黄': ['黄色', '黄', '鹅黄', '姜黄', '明黄', '柠檬黄', '奶黄'],
-  '卡其': ['卡其', '卡其色', '杏色', '驼色', '米色', '奶茶色', '燕麦色', '焦糖', '咖色', '棕色', '咖啡色'],
-  '粉色': ['粉色', '粉', '粉红', '浅粉', '樱花粉', '蜜桃粉', '藕粉', '茱萸粉'],
+  '红': ['红色', '红', '酒红', '暗红', '正红', '大红', '砖红', '玫红', '枣红', '复古红'],
+  '蓝': ['蓝色', '蓝', '深蓝', '浅蓝', '天蓝', '藏蓝', '湖蓝', '宝蓝', '牛仔蓝', '雾霾蓝', '克莱因蓝'],
+  '绿': ['绿色', '绿', '墨绿', '浅绿', '军绿', '草绿', '薄荷绿', '牛油果绿', '抹茶绿', '森林绿', '豆绿', '翠绿'],
+  '黄': ['黄色', '黄', '鹅黄', '姜黄', '明黄', '柠檬黄', '奶黄', '暖黄'],
+  '卡其': ['卡其', '卡其色', '杏色', '驼色', '米色', '奶茶色', '燕麦色', '焦糖', '咖色', '棕色', '咖啡色', '栗色', '巧克力色'],
+  '粉色': ['粉色', '粉', '粉红', '浅粉', '樱花粉', '蜜桃粉', '藕粉', '茱萸粉', '干枯玫瑰粉'],
 };
 
 const STYLE_KEYWORDS: Record<ClothingStyle, string[]> = {
@@ -40,7 +40,7 @@ const STYLE_KEYWORDS: Record<ClothingStyle, string[]> = {
   '休闲': ['休闲', '日常', '宽松', '舒适', '慵懒', '随性', '休闲风', '日系休闲'],
   '运动': ['运动', '健身', '跑步', '瑜伽', '训练', '速干', '运动风', 'athleisure'],
   '正式': ['正式', '商务', '通勤', '职业', '西装', '正装', 'OL', '职场', '白领'],
-  '复古': ['复古', 'vintage', '古着', '怀旧', '港风', '老钱风', '法式复古'],
+  '复古': ['复古', 'vintage', '古着', '怀旧', '港风', '老钱风', '法式复古', '中古'],
   '韩系': ['韩版', '韩系', '韩风', '韩式', 'ins风', '韩系穿搭', '韩国'],
   '日系': ['日系', '日风', '日式', '原宿', '盐系', '森系', '日系穿搭', 'cityboy', 'city girl'],
   '甜酷': ['甜酷', '辣妹', 'y2k', '千禧', '甜辣', '暗黑甜', '美式甜酷'],
@@ -51,15 +51,15 @@ const PATTERN_KEYWORDS: Record<ClothingPattern, string[]> = {
   '纯色': ['纯色', '素色', '净色', '纯色系', '单色'],
   '条纹': ['条纹', '横条纹', '竖条纹', '海魂衫', '条纹衫', '条纹控'],
   '格子': ['格子', '格纹', '格仔', '千鸟格', '苏格兰格', '威尔士格', '棋盘格'],
-  '印花': ['印花', '碎花', '花卉', '花色', '图案', '涂鸦', '手绘', '植物印花'],
-  '字母/图案': ['字母', 'logo', '印花字母', '标语', 'slogan', '卡通', '动漫', 'ip联名', '联名款'],
+  '印花': ['印花', '碎花', '花卉', '花色', '涂鸦', '手绘', '植物印花', '花', '花朵', '玫瑰', '樱花', '桃花'],
+  '字母/图案': ['字母', 'logo', '印花字母', '标语', 'slogan', '卡通', '动漫', 'ip联名', '联名款', '蝴蝶', '动物', '小熊', '猫咪', '兔子', '星星', '爱心', 'emoji', '图案'],
   '拼接': ['拼接', '拼色', '撞色', '双色', '色块', '不对称'],
 };
 
 const THICKNESS_KEYWORDS: Record<ClothingThickness, string[]> = {
-  '薄': ['薄款', '轻薄', '透气', '冰丝', '雪纺', '薄', '夏季', '速干', '凉爽'],
+  '薄': ['薄款', '轻薄', '透气', '冰丝', '雪纺', '速干', '凉爽'],
   '适中': ['适中', '常规', '中厚', '四季', '春秋', '常规厚度'],
-  '厚': ['厚款', '加厚', '保暖', '磨毛', '厚', '秋冬', '加绒', '抓绒', '摇粒绒'],
+  '厚': ['厚款', '加厚', '保暖', '磨毛', '秋冬', '加绒', '抓绒', '摇粒绒'],
   '加厚': ['加厚', '极厚', '极寒', '羽绒', '棉服', '加厚保暖', '极地', '防寒'],
 };
 
@@ -80,6 +80,7 @@ const SEASON_KEYWORDS: Record<Season, string[]> = {
   '冬': ['冬季', '冬天', '冬装', '寒冬', '冬款', '保暖'],
 };
 
+// Match keywords with priority: longer keywords first, return matched keyword info
 function matchKeywords(text: string, keywordMap: Record<string, string[]>): string | null {
   const lowerText = text.toLowerCase();
   let bestMatch: string | null = null;
@@ -97,6 +98,23 @@ function matchKeywords(text: string, keywordMap: Record<string, string[]>): stri
   return bestMatch;
 }
 
+// Find all matched keyword strings and their positions for removal
+function findMatchedStrings(text: string, keywordMap: Record<string, string[]>): string[] {
+  const lowerText = text.toLowerCase();
+  const matched: string[] = [];
+
+  for (const [, keywords] of Object.entries(keywordMap)) {
+    for (const kw of keywords) {
+      if (lowerText.includes(kw.toLowerCase())) {
+        matched.push(kw);
+      }
+    }
+  }
+
+  // Sort by length descending to remove longer matches first
+  return matched.sort((a, b) => b.length - a.length);
+}
+
 export interface ParsedTaobaoResult {
   category: ClothingCategory | null;
   color: ClothingColor | null;
@@ -109,14 +127,49 @@ export interface ParsedTaobaoResult {
 }
 
 export function parseTaobaoText(text: string): ParsedTaobaoResult {
-  const cleanedText = text.replace(/\s+/g, ' ').trim();
+  let cleanedText = text.replace(/\s+/g, ' ').trim();
 
-  const category = matchKeywords(cleanedText, CATEGORY_KEYWORDS) as ClothingCategory | null;
+  // Step 1: Match color FIRST (highest priority)
   const color = matchKeywords(cleanedText, COLOR_KEYWORDS) as ClothingColor | null;
-  const thickness = matchKeywords(cleanedText, THICKNESS_KEYWORDS) as ClothingThickness | null;
-  const style = matchKeywords(cleanedText, STYLE_KEYWORDS) as ClothingStyle | null;
+
+  // Remove matched color keywords from text to prevent false matches
+  // e.g. "薄荷色" should not match "薄款"
+  if (color) {
+    const colorMatches = findMatchedStrings(cleanedText, COLOR_KEYWORDS);
+    for (const m of colorMatches) {
+      cleanedText = cleanedText.replace(new RegExp(m, 'gi'), ' ');
+    }
+  }
+
+  // Step 2: Match category
+  const category = matchKeywords(cleanedText, CATEGORY_KEYWORDS) as ClothingCategory | null;
+
+  // Remove matched category keywords
+  if (category) {
+    const catMatches = findMatchedStrings(cleanedText, CATEGORY_KEYWORDS);
+    for (const m of catMatches) {
+      cleanedText = cleanedText.replace(new RegExp(m, 'gi'), ' ');
+    }
+  }
+
+  // Step 3: Match pattern (before thickness, since patterns like "碎花" could interfere)
   const pattern = matchKeywords(cleanedText, PATTERN_KEYWORDS) as ClothingPattern | null;
 
+  // Remove matched pattern keywords
+  if (pattern) {
+    const patMatches = findMatchedStrings(cleanedText, PATTERN_KEYWORDS);
+    for (const m of patMatches) {
+      cleanedText = cleanedText.replace(new RegExp(m, 'gi'), ' ');
+    }
+  }
+
+  // Step 4: Match style
+  const style = matchKeywords(cleanedText, STYLE_KEYWORDS) as ClothingStyle | null;
+
+  // Step 5: Match thickness (after removing color/pattern keywords)
+  const thickness = matchKeywords(cleanedText, THICKNESS_KEYWORDS) as ClothingThickness | null;
+
+  // Step 6: Match scenes (multi-select)
   const scenes: ClothingScene[] = [];
   for (const [scene, keywords] of Object.entries(SCENE_KEYWORDS)) {
     if (keywords.some((kw) => cleanedText.toLowerCase().includes(kw.toLowerCase()))) {
@@ -124,6 +177,7 @@ export function parseTaobaoText(text: string): ParsedTaobaoResult {
     }
   }
 
+  // Step 7: Match seasons (multi-select)
   const seasons: Season[] = [];
   for (const [season, keywords] of Object.entries(SEASON_KEYWORDS)) {
     if (keywords.some((kw) => cleanedText.toLowerCase().includes(kw.toLowerCase()))) {
@@ -139,132 +193,14 @@ export function parseTaobaoText(text: string): ParsedTaobaoResult {
     pattern,
     scenes: scenes.length > 0 ? scenes : ['日常'],
     seasons: seasons.length > 0 ? seasons : ['春', '秋'],
-    rawText: cleanedText,
+    rawText: text,
   };
-}
-
-function preprocessImageForOCR(imageSrc: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      // Use lower half + right side of image for Taobao (text is usually there)
-      // But also include full image as fallback
-      const w = img.width;
-      const h = img.height;
-
-      // For Taobao screenshots: crop to the text-heavy region (bottom 60%)
-      const cropY = Math.floor(h * 0.35);
-      const cropH = h - cropY;
-
-      canvas.width = w;
-      canvas.height = cropH;
-      const ctx = canvas.getContext('2d')!;
-
-      // Draw cropped region
-      ctx.drawImage(img, 0, cropY, w, cropH, 0, 0, w, cropH);
-
-      // Get image data for preprocessing
-      const imageData = ctx.getImageData(0, 0, w, cropH);
-      const data = imageData.data;
-
-      // Step 1: Convert to grayscale
-      for (let i = 0; i < data.length; i += 4) {
-        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-        data[i] = data[i + 1] = data[i + 2] = gray;
-      }
-
-      // Step 2: Increase contrast using histogram stretching
-      let minGray = 255;
-      let maxGray = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        const gray = data[i];
-        if (gray < minGray) minGray = gray;
-        if (gray > maxGray) maxGray = gray;
-      }
-
-      if (maxGray > minGray) {
-        const range = maxGray - minGray;
-        for (let i = 0; i < data.length; i += 4) {
-          const stretched = ((data[i] - minGray) / range) * 255;
-          data[i] = data[i + 1] = data[i + 2] = stretched;
-        }
-      }
-
-      // Step 3: Binarize (Otsu-like threshold) - makes text stand out
-      // Calculate threshold
-      const histogram = new Array(256).fill(0);
-      for (let i = 0; i < data.length; i += 4) {
-        histogram[Math.round(data[i])]++;
-      }
-
-      const totalPixels = data.length / 4;
-      let sum = 0;
-      for (let i = 0; i < 256; i++) sum += i * histogram[i];
-
-      let sumB = 0;
-      let wB = 0;
-      let threshold = 128;
-
-      for (let t = 0; t < 256; t++) {
-        wB += histogram[t];
-        if (wB === 0) continue;
-        const wF = totalPixels - wB;
-        if (wF === 0) break;
-
-        sumB += t * histogram[t];
-        const mB = sumB / wB;
-        const mF = (sum - sumB) / wF;
-        const variance = wB * wF * (mB - mF) * (mB - mF);
-
-        if (variance > 0) {
-          threshold = t;
-        }
-      }
-
-      // Apply threshold - make text black, background white
-      for (let i = 0; i < data.length; i += 4) {
-        const val = data[i] < threshold ? 0 : 255;
-        data[i] = data[i + 1] = data[i + 2] = val;
-      }
-
-      ctx.putImageData(imageData, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.onerror = () => reject(new Error('图片预处理失败'));
-    img.src = imageSrc;
-  });
 }
 
 export async function extractTextFromImage(imageSrc: string): Promise<string> {
   const Tesseract = await import('tesseract.js');
-
-  // Try preprocessed image first (cropped + enhanced for text)
-  let text = '';
-  try {
-    const preprocessed = await preprocessImageForOCR(imageSrc);
-    const result = await Tesseract.recognize(preprocessed, 'chi_sim+eng', {
-      logger: () => {},
-    });
-    text = result.data.text || '';
-  } catch {
-    // fallback
-  }
-
-  // If preprocessed didn't get much, try original image with full page
-  if (text.trim().length < 5) {
-    try {
-      const result = await Tesseract.recognize(imageSrc, 'chi_sim+eng', {
-        logger: () => {},
-      });
-      const originalText = result.data.text || '';
-      // Use whichever got more text
-      text = originalText.length > text.length ? originalText : text;
-    } catch {
-      // ignore
-    }
-  }
-
-  return text;
+  const result = await Tesseract.recognize(imageSrc, 'chi_sim+eng', {
+    logger: () => {},
+  });
+  return result.data.text;
 }
