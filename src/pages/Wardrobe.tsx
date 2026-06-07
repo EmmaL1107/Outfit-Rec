@@ -388,15 +388,15 @@ export default function Wardrobe() {
 
       {/* ADD MODAL */}
       {showAdd && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end justify-center">
-          <div className="bg-white w-full max-w-lg rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end justify-center pb-20">
+          <div className="bg-white w-full max-w-lg rounded-t-2xl max-h-[80vh] overflow-y-auto animate-slide-up">
             <div className="sticky top-0 bg-white border-b border-[var(--color-border)] px-5 py-4 flex items-center justify-between z-10">
               <h2 className="text-base font-semibold text-black">{editItem ? '编辑衣物' : '添加衣物'}</h2>
               <button className="p-1 text-gray-400 hover:text-black" onClick={resetForm}>
                 <IconClose size={18} />
               </button>
             </div>
-            <div className="px-5 py-5 space-y-5">
+            <div className="px-5 py-5 space-y-5 pb-6">
               <div>
                 <label className="block text-[12px] font-medium text-gray-700 mb-2">衣物照片（可选）</label>
                 <div 
